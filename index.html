@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CinePremiadas · Películas premiadas al azar</title>
+<meta name="description" content="Descubre películas ganadoras del Óscar, la Palma de Oro, el Goya, el León de Oro y el Oso de Oro. Marca las que has visto y puntúalas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0e0d0b;
+    --bg-soft: #161310;
+    --panel: #1c1815;
+    --panel-line: #33291f;
+    --ink: #f2ece1;
+    --ink-dim: #c9bfae;
+    --ink-faint: #8b8071;
+    --gold: #cf9e3f;
+    --gold-soft: #e6c878;
+    --crimson: #a5312f;
+    --teal: #3e6b63;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  :root:not([data-theme="light"]){ color-scheme: dark; }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg: #f4ede0; --bg-soft: #ece2d0; --panel: #fbf6ec; --panel-line: #ddccae;
+      --ink: #211a12; --ink-dim: #4f4534; --ink-faint: #7d715a;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg: #f4ede0; --bg-soft: #ece2d0; --panel: #fbf6ec; --panel-line: #ddccae;
+    --ink: #211a12; --ink-dim: #4f4534; --ink-faint: #7d715a;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ height: 100%; }
+  html{ scroll-padding-top: var(--safe-top); }
+  body{
+    margin:0; background: var(--bg); color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding-top: var(--safe-top); padding-bottom: var(--safe-bottom);
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(207,158,63,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(165,49,47,0.08), transparent 55%);
+  }
+  h1,h2,h3,.display{ font-family:'Fraunces', Georgia, serif; }
+
+  .wrap{ max-width: 760px; margin: 0 auto; padding: 0 20px 64px; }
+
+  header.top{
+    padding: 30px 20px 18px; display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+    max-width: 760px; margin:0 auto;
+  }
+  .brand{ display:flex; flex-direction:column; gap:2px; }
+  .brand .mark{ font-family:'Fraunces', serif; font-weight:700; font-size:26px; letter-spacing:0.01em; }
+  .brand .mark em{ font-style: italic; color: var(--gold-soft); }
+  .brand .sub{ color: var(--ink-faint); font-size:12.5px; }
+
+  nav.tabs{
+    display:flex; gap:4px; background: var(--panel); border:1px solid var(--panel-line);
+    border-radius:999px; padding:4px; margin: 6px auto 22px; max-width: fit-content;
+  }
+  nav.tabs button{
+    appearance:none; border:none; background:transparent; color: var(--ink-dim);
+    font-family:'Inter'; font-weight:600; font-size:13.5px; padding:9px 18px;
+    border-radius:999px; cursor:pointer; transition: background .18s ease, color .18s ease;
+  }
+  nav.tabs button.active{ background: var(--gold); color:#241a06; }
+  nav.tabs button:not(.active):hover{ color: var(--ink); }
+
+  section.view{ display:none; }
+  section.view.active{ display:block; }
+
+  .progress-card{
+    background: var(--panel); border:1px solid var(--panel-line); border-radius:16px;
+    padding:16px 18px; margin-bottom:20px; display:flex; align-items:center; gap:16px;
+  }
+  .progress-card .pnum{ font-family:'Fraunces'; font-weight:700; font-size:22px; flex:none; }
+  .progress-card .pbar-wrap{ flex:1; min-width:0; }
+  .progress-card .plabel{ font-size:11.5px; color: var(--ink-faint); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .progress-card .pbar{ height:7px; border-radius:999px; background: var(--bg-soft); overflow:hidden; border:1px solid var(--panel-line); }
+  .progress-card .pbar > div{ height:100%; background: linear-gradient(90deg, var(--gold), var(--gold-soft)); border-radius:999px; transition: width .4s ease; }
+
+  .filters{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .chip{
+    display:flex; align-items:center; gap:7px; border:1px solid var(--panel-line); background: var(--panel);
+    padding:8px 14px 8px 10px; border-radius:999px; cursor:pointer; user-select:none;
+    font-size:13px; font-weight:600; color: var(--ink-dim); transition: border-color .15s, color .15s;
+  }
+  .chip input{ accent-color: var(--gold); width:15px; height:15px; margin:0; }
+  .chip.on{ color: var(--ink); border-color: var(--dot-color, var(--gold)); }
+  .chip .dot{ width:8px; height:8px; border-radius:50%; background: var(--dot-color); flex:none; }
+  .chip small{ font-weight:400; color: var(--ink-faint); }
+
+  .mode-row{ display:flex; gap:6px; margin-bottom:22px; }
+  .mode-btn{
+    flex:1; appearance:none; border:1px solid var(--panel-line); background: var(--bg-soft); color: var(--ink-dim);
+    font-family:'Inter'; font-weight:600; font-size:12.5px; padding:9px 10px; border-radius:10px; cursor:pointer;
+  }
+  .mode-btn.active{ background: var(--teal); border-color: var(--teal); color:#eafaf5; }
+
+  .sort-row{ display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .sort-row .sort-label{ font-size:11.5px; color: var(--ink-faint); }
+  .sort-btn{
+    appearance:none; border:1px solid var(--panel-line); background: var(--panel); color: var(--ink-dim);
+    font-family:'Inter'; font-weight:600; font-size:12px; padding:7px 12px; border-radius:999px; cursor:pointer;
+  }
+  .sort-btn.active{ background: var(--gold); border-color: var(--gold); color:#241a06; }
+  .sort-select{
+    appearance:none; border:1px solid var(--panel-line); background: var(--panel); color: var(--ink);
+    font-family:'Inter'; font-weight:600; font-size:12.5px; padding:8px 30px 8px 12px; border-radius:10px; cursor:pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0' fill='none' stroke='%238b8071' stroke-width='1.4'/></svg>");
+    background-repeat:no-repeat; background-position: right 12px center;
+  }
+
+  .roll-area{ text-align:center; padding: 10px 0 6px; }
+  .roll-btn{
+    appearance:none; border:none; cursor:pointer;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color:#241a06; font-family:'Inter'; font-weight:700; font-size:15px;
+    padding:15px 30px; border-radius:14px; letter-spacing:0.01em;
+    box-shadow: 0 10px 24px -10px rgba(207,158,63,0.55);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .roll-btn:hover{ transform: translateY(-1px); box-shadow: 0 14px 28px -10px rgba(207,158,63,0.65); }
+  .roll-btn:active{ transform: translateY(0); }
+  .roll-btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
+  .roll-hint{ margin-top:10px; font-size:12.5px; color: var(--ink-faint); min-height:16px; }
+
+  .card{
+    margin-top:26px; background: var(--panel); border:1px solid var(--panel-line);
+    border-radius:20px; padding:30px 26px 26px; position:relative; overflow:hidden;
+    animation: rise .38s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes rise{ from{ opacity:0; transform: translateY(10px); } to{ opacity:1; transform:none; } }
+  .card::before{ content:""; position:absolute; inset:0 0 auto 0; height:4px; background: var(--card-accent, var(--gold)); }
+  .badge{
+    display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700;
+    letter-spacing:0.06em; padding:5px 11px 5px 9px; border-radius:999px;
+    background: color-mix(in srgb, var(--card-accent, var(--gold)) 18%, transparent);
+    color: var(--card-accent, var(--gold-soft));
+    border:1px solid color-mix(in srgb, var(--card-accent, var(--gold)) 45%, transparent);
+  }
+  .badge .dot{ width:7px; height:7px; border-radius:50%; background: currentColor; }
+  .card h2{ margin: 16px 0 4px; font-size: 27px; line-height:1.18; font-weight:600; }
+  .card .meta{ color: var(--ink-dim); font-size:14px; display:flex; flex-wrap:wrap; gap:5px 10px; }
+  .card .meta b{ color: var(--ink); font-weight:600; }
+  .card .meta .sep{ color: var(--ink-faint); }
+  .card .synopsis{ margin-top:14px; color: var(--ink-dim); font-size:14.5px; line-height:1.55; }
+  .card .otherawards{
+    margin-top:14px; font-size:12.5px; color: var(--ink-faint); display:flex; gap:8px; align-items:flex-start;
+  }
+  .card .otherawards b{ color: var(--gold-soft); font-weight:600; }
+
+  .card .actions{ margin-top: 22px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .btn{
+    appearance:none; cursor:pointer; font-family:'Inter'; font-weight:600; font-size:13.5px;
+    padding:10px 16px; border-radius:10px; border:1px solid var(--panel-line); background: var(--bg-soft); color: var(--ink);
+  }
+  .btn:hover{ border-color: var(--ink-faint); }
+  .btn.primary{ background: var(--teal); border-color: var(--teal); color:#eafaf5; }
+  .btn.primary:hover{ filter: brightness(1.08); }
+  .watched-tag{
+    display:inline-flex; align-items:center; gap:7px; font-size:13px; color: var(--ink-dim);
+    background: var(--bg-soft); border:1px solid var(--panel-line); padding:8px 13px; border-radius:10px;
+  }
+  .watched-tag b{ color: var(--gold-soft); }
+
+  .rate-box{ margin-top:18px; padding-top:18px; border-top:1px dashed var(--panel-line); display:none; }
+  .rate-box.open{ display:block; }
+  .rate-box label{ font-size:12.5px; color: var(--ink-faint); display:block; margin-bottom:9px; }
+  .rate-row{ display:flex; gap:6px; flex-wrap:wrap; }
+  .rate-pip{
+    width:33px; height:33px; border-radius:9px; border:1px solid var(--panel-line);
+    background: var(--bg-soft); color: var(--ink-dim); font-weight:600; font-size:13.5px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .rate-pip.sel{ background: var(--gold); border-color: var(--gold); color:#241a06; }
+  .rate-confirm{ margin-top:14px; display:flex; gap:10px; }
+
+  .poster{ margin:-30px -26px 18px; padding:22px 26px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px; min-height:92px; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.45); }
+  .poster span{ font-family:'Fraunces',serif; font-weight:700; font-size:44px; line-height:1; opacity:.92; }
+  .poster em{ font-family:'Fraunces',serif; font-size:13px; opacity:.85; text-align:right; max-width:55%; }
+  .links{ margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; }
+  .links a{ font-size:12px; font-weight:600; color:var(--ink-dim); text-decoration:none; border:1px solid var(--panel-line); background:var(--bg-soft); padding:6px 11px; border-radius:999px; }
+  .links a:hover{ color:var(--ink); border-color:var(--ink-faint); }
+  .rate-extra{ margin-top:14px; display:flex; flex-direction:column; gap:10px; }
+  .rate-extra textarea,.rate-extra input,.search-input,.filter-sel{ width:100%; background:var(--bg-soft); color:var(--ink); border:1px solid var(--panel-line); border-radius:10px; padding:9px 12px; font-family:'Inter'; font-size:13px; }
+  .rate-extra textarea{ min-height:64px; resize:vertical; }
+  .rate-extra label{ margin:0 0 4px; }
+  .search-input{ margin-bottom:14px; }
+  .filter-sel{ flex:1; width:auto; min-width:140px; }
+  .row .cmt{ font-size:12px; color:var(--ink-dim); margin-top:4px; font-style:italic; }
+  .wish-star{ color:var(--gold-soft); }
+  .share-btn{ margin-bottom:18px; }
+  .bar-row{ display:flex; align-items:center; gap:10px; margin:7px 0; font-size:13px; }
+  .bar-row .bl{ width:38%; min-width:90px; color:var(--ink-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar-row .bt{ flex:1; height:8px; background:var(--bg-soft); border:1px solid var(--panel-line); border-radius:999px; overflow:hidden; }
+  .bar-row .bt div{ height:100%; background:linear-gradient(90deg,var(--gold),var(--gold-soft)); }
+  .bar-row .bv{ width:64px; text-align:right; font-weight:600; }
+  .stat-h{ font-family:'Fraunces'; font-size:16px; margin:22px 0 6px; }
+  .modal{ position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:60; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .modal-box{ background:var(--panel); border:1px solid var(--panel-line); border-radius:16px; padding:18px; max-width:480px; width:100%; max-height:92vh; overflow:auto; }
+  .modal-box img{ width:100%; border-radius:10px; display:block; margin-bottom:10px; }
+  .modal-box textarea{ width:100%; min-height:90px; background:var(--bg-soft); color:var(--ink); border:1px solid var(--panel-line); border-radius:10px; padding:8px; font-size:12px; margin-bottom:10px; }
+  .toast{
+    position:fixed; left:50%; bottom: calc(26px + var(--safe-bottom));
+    transform: translateX(-50%) translateY(14px); opacity:0; pointer-events:none;
+    background: var(--gold); color:#241a06; font-weight:700; font-size:13.5px;
+    padding:11px 20px; border-radius:999px; transition: all .22s ease; z-index:50;
+    box-shadow: 0 14px 30px -8px rgba(0,0,0,0.45);
+  }
+  .toast.show{ transform: translateX(-50%) translateY(0); opacity:1; }
+
+  .subtabs{ display:flex; gap:8px; margin-bottom:18px; }
+  .subtabs button{
+    appearance:none; border:1px solid var(--panel-line); background:var(--panel); color: var(--ink-dim);
+    font-family:'Inter'; font-weight:600; font-size:13px; padding:8px 15px; border-radius:10px; cursor:pointer;
+  }
+  .subtabs button.active{ background: var(--bg-soft); color: var(--ink); border-color: var(--ink-faint); }
+
+  .stat-row{ display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .stat{ flex:1; min-width:110px; background: var(--panel); border:1px solid var(--panel-line); border-radius:14px; padding:14px 16px; }
+  .stat .n{ font-family:'Fraunces'; font-size:24px; font-weight:600; }
+  .stat .l{ font-size:11.5px; color: var(--ink-faint); text-transform:uppercase; letter-spacing:0.06em; margin-top:2px; }
+
+  .list{ display:flex; flex-direction:column; gap:10px; }
+  .row{ background: var(--panel); border:1px solid var(--panel-line); border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:14px; }
+  .row .pos{ font-family:'Fraunces'; font-weight:600; font-size:16px; color: var(--ink-faint); width:26px; flex:none; text-align:center; }
+  .row .info{ flex:1; min-width:0; }
+  .row .info h4{ margin:0 0 3px; font-size:15px; font-weight:600; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .info .sub{ font-size:12px; color: var(--ink-faint); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .row .score{
+    flex:none; font-family:'Fraunces'; font-weight:700; font-size:17px; background: var(--bg-soft);
+    border:1px solid var(--panel-line); color: var(--gold-soft); width:40px; height:40px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .row .edit{ flex:none; border:none; background:transparent; color: var(--ink-faint); cursor:pointer; font-size:12px; padding:6px; text-decoration:underline; text-underline-offset:2px; }
+  .row.pending{ opacity:0.9; }
+  .row .mark-btn{
+    flex:none; border:1px solid var(--panel-line); background: var(--teal); color:#eafaf5; cursor:pointer;
+    font-size:12px; font-weight:600; padding:8px 12px; border-radius:9px;
+  }
+
+  .empty{ text-align:center; padding: 50px 20px; color: var(--ink-faint); font-size:13.5px; background: var(--panel); border:1px dashed var(--panel-line); border-radius:16px; }
+  .empty .display{ font-size:19px; color: var(--ink-dim); margin-bottom:6px; }
+
+  .footnote{ text-align:center; color: var(--ink-faint); font-size:11.5px; margin-top:34px; line-height:1.6; }
+  .footnote .status-ok{ color: #7fae8f; }
+  .footnote .status-bad{ color: #c97b6d; }
+
+  @media (max-width: 480px){
+    .card h2{ font-size:23px; }
+    .roll-btn{ width:100%; }
+    header.top{ padding-top: 22px; }
+    .mode-row{ flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="mark">Cine<em>Premiadas</em></div>
+    <div class="sub">Óscar · Cannes · Goya · Venecia · Berlín</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab-btn active" data-view="discover">Descubrir</button>
+    <button class="tab-btn" data-view="collection">Mi colección</button>
+  </nav>
+
+  <!-- DESCUBRIR -->
+  <section id="view-discover" class="view active">
+    <div class="progress-card" id="progressCard"></div>
+
+    <div class="filters" id="filters"></div>
+    <div class="mode-row" id="modeRow"></div>
+    <div class="mode-row"><select class="filter-sel" id="decadeSel"><option value="">Todas las décadas</option></select><select class="filter-sel" id="countrySel"><option value="">Todos los países</option></select></div>
+
+    <div class="roll-area">
+      <button class="roll-btn" id="rollBtn">🎬 Elegir película al azar</button>
+      <div class="roll-hint" id="rollHint"></div>
+    </div>
+
+    <div id="cardHolder"></div>
+  </section>
+
+  <!-- COLECCIÓN -->
+  <section id="view-collection" class="view">
+    <div class="stat-row" id="statRow"></div>
+    <div class="subtabs">
+      <button class="sub-btn active" data-sub="history">Historial</button>
+      <button class="sub-btn" data-sub="ranking">Ranking</button>
+      <button class="sub-btn" data-sub="pending">Por ver</button>
+      <button class="sub-btn" data-sub="stats">Estadísticas</button>
+    </div>
+    <button class="btn share-btn" id="shareBtn">📤 Compartir ranking</button>
+    <input class="search-input" id="searchInput" type="search" placeholder="Buscar por título o director…">
+    <div id="collectionBody"></div>
+  </section>
+
+  <div class="footnote" id="footnote"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------------------------------------------------------------
+   BASE DE DATOS DE PELÍCULAS
+   [award, year, title, director, country, synopsis, otherAwards]
+   award: "oscar" | "cannes" | "goya"
+--------------------------------------------------------------------- */
+const RAW_MOVIES = [
+// ================= OSCAR: MEJOR PELÍCULA =================
+["oscar",1927,"Alas","William A. Wellman","EE. UU.","Dos aviadores rivales se hacen amigos y combaten juntos en los cielos de la Primera Guerra Mundial.",""],
+["oscar",1928,"La melodía de Broadway","Harry Beaumont","EE. UU.","Dos hermanas artistas de variedades compiten por el mismo hombre en el Nueva York del espectáculo.",""],
+["oscar",1929,"Sin novedad en el frente","Lewis Milestone","EE. UU.","Un joven soldado alemán descubre el horror y la desilusión de la guerra en las trincheras.","Mejor Director"],
+["oscar",1930,"Cimarrón","Wesley Ruggles","EE. UU.","Una familia pionera se instala en el Oeste durante la fiebre de tierras de Oklahoma.","Mejor Guion"],
+["oscar",1931,"Gran Hotel","Edmund Goulding","EE. UU.","Las vidas de varios huéspedes de un lujoso hotel berlinés se entrelazan durante unos días decisivos.",""],
+["oscar",1932,"Cabalgata","Frank Lloyd","EE. UU.","Una familia británica atraviesa tres décadas de cambios históricos, desde la guerra de los Bóers hasta los años 30.","Mejor Director"],
+["oscar",1934,"Sucedió una noche","Frank Capra","EE. UU.","Una heredera fugitiva y un periodista desencantado viven un romance improvisado en un viaje en autobús.","Mejor Director, Mejor Actor, Mejor Actriz, Mejor Guion"],
+["oscar",1935,"Rebelión a bordo","Frank Lloyd","EE. UU.","La tripulación del HMS Bounty se subleva contra un capitán tiránico en el Pacífico del siglo XVIII.",""],
+["oscar",1936,"El gran Ziegfeld","Robert Z. Leonard","EE. UU.","Biografía musical del legendario productor de Broadway Florenz Ziegfeld y sus fastuosos espectáculos.","Mejor Actriz"],
+["oscar",1937,"La vida de Émile Zola","William Dieterle","EE. UU.","El escritor francés Émile Zola se juega su carrera para defender al capitán Dreyfus, injustamente acusado.","Mejor Actor de reparto, Mejor Guion"],
+["oscar",1938,"Vive como quieras","Frank Capra","EE. UU.","Una familia extravagante y bohemia choca con las convenciones de una familia adinerada por amor.","Mejor Director"],
+["oscar",1939,"Lo que el viento se llevó","Victor Fleming","EE. UU.","El turbulento romance de Scarlett O'Hara durante la Guerra de Secesión y la Reconstrucción del Sur.","Mejor Director, Mejor Actriz, Mejor Actriz de reparto, Mejor Guion"],
+["oscar",1940,"Rebeca","Alfred Hitchcock","EE. UU.","Una joven esposa vive atormentada por el recuerdo de la primera mujer de su marido en Manderley.","Mejor Fotografía"],
+["oscar",1941,"¡Qué verde era mi valle!","John Ford","EE. UU.","Los recuerdos de infancia de un niño en una comunidad minera galesa marcada por el cambio.","Mejor Director, Mejor Actor de reparto"],
+["oscar",1942,"La señora Miniver","William Wyler","EE. UU.","Una familia inglesa resiste con entereza los estragos del Blitz durante la Segunda Guerra Mundial.","Mejor Director, Mejor Actriz, Mejor Guion"],
+["oscar",1943,"Casablanca","Michael Curtiz","EE. UU.","Un cínico dueño de un club nocturno debe elegir entre el amor y ayudar a escapar a un héroe de la resistencia.","Mejor Director, Mejor Guion"],
+["oscar",1944,"Siguiendo mi camino","Leo McCarey","EE. UU.","Un joven sacerdote moderno revitaliza una parroquia neoyorquina en apuros junto a un veterano párroco.","Mejor Director, Mejor Actor, Mejor Actor de reparto"],
+["oscar",1945,"Días sin huella","Billy Wilder","EE. UU.","Un escritor alcohólico se pierde en un fin de semana de autodestrucción en Nueva York.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1946,"Los mejores años de nuestra vida","William Wyler","EE. UU.","Tres veteranos regresan a su ciudad natal tras la guerra y luchan por reencontrar su lugar.","Mejor Director, Mejor Actor, Mejor Actor de reparto"],
+["oscar",1947,"La barrera invisible","Elia Kazan","EE. UU.","Un periodista se hace pasar por judío para investigar el antisemitismo cotidiano en la sociedad estadounidense.","Mejor Director, Mejor Actriz de reparto"],
+["oscar",1948,"Hamlet","Laurence Olivier","Reino Unido","El príncipe de Dinamarca busca vengar el asesinato de su padre en esta adaptación de Shakespeare.","Mejor Actor"],
+["oscar",1949,"El político","Robert Rossen","EE. UU.","Un político populista sureño se corrompe a medida que asciende hacia el poder absoluto.","Mejor Actor, Mejor Actriz de reparto"],
+["oscar",1950,"Eva al desnudo","Joseph L. Mankiewicz","EE. UU.","Una joven admiradora se infiltra en la vida de una gran diva del teatro para ocupar su lugar.","Mejor Director, Mejor Guion, Mejor Actor de reparto"],
+["oscar",1951,"Un americano en París","Vincente Minnelli","EE. UU.","Un pintor estadounidense en París se enamora de una joven francesa comprometida con otro hombre.","Mejor Guion"],
+["oscar",1952,"El mayor espectáculo del mundo","Cecil B. DeMille","EE. UU.","Los avatares y romances tras bambalinas de un gran circo itinerante estadounidense.",""],
+["oscar",1953,"De aquí a la eternidad","Fred Zinnemann","EE. UU.","Las vidas de varios soldados en Hawái se entrelazan en los días previos al ataque a Pearl Harbor.","Mejor Director, Mejor Actor de reparto, Mejor Actriz de reparto, Mejor Guion"],
+["oscar",1954,"La ley del silencio","Elia Kazan","EE. UU.","Un exboxeador se enfrenta a la corrupción sindical de los muelles de Nueva York.","Mejor Director, Mejor Actor, Mejor Actriz de reparto, Mejor Guion"],
+["oscar",1955,"Marty","Delbert Mann","EE. UU.","Un carnicero de Nueva York, tímido y solitario, encuentra el amor cuando menos lo espera.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1956,"La vuelta al mundo en 80 días","Michael Anderson","EE. UU.","Un caballero inglés apuesta a que puede dar la vuelta al mundo en solo ochenta días.","Mejor Guion"],
+["oscar",1957,"El puente sobre el río Kwai","David Lean","Reino Unido","Prisioneros de guerra británicos construyen un puente para sus captores japoneses en plena selva birmana.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1958,"Gigi","Vincente Minnelli","EE. UU.","En el París de la Belle Époque, una joven educada para ser cortesana descubre el amor verdadero.","Mejor Director, Mejor Guion"],
+["oscar",1959,"Ben-Hur","William Wyler","EE. UU.","Un príncipe judío traicionado por su amigo romano busca venganza en la época de Jesucristo.","Mejor Director, Mejor Actor"],
+["oscar",1960,"El apartamento","Billy Wilder","EE. UU.","Un empleado presta su apartamento a sus jefes y termina enamorándose de la amante de uno de ellos.","Mejor Director, Mejor Guion"],
+["oscar",1961,"West Side Story","Robert Wise, Jerome Robbins","EE. UU.","Una versión moderna de Romeo y Julieta entre dos bandas rivales del Nueva York de los años 60.","Mejor Director, Mejor Actor de reparto, Mejor Actriz de reparto"],
+["oscar",1962,"Lawrence de Arabia","David Lean","Reino Unido","El oficial británico T. E. Lawrence lidera la revuelta árabe contra el Imperio otomano.","Mejor Director"],
+["oscar",1963,"Tom Jones","Tony Richardson","Reino Unido","Las alocadas aventuras amorosas de un joven de origen incierto en la Inglaterra del siglo XVIII.","Mejor Director, Mejor Guion"],
+["oscar",1964,"Mi bella dama","George Cukor","EE. UU.","Un profesor de fonética apuesta a que puede transformar a una florista callejera en una dama.","Mejor Director, Mejor Actor"],
+["oscar",1965,"Sonrisas y lágrimas","Robert Wise","EE. UU.","Una joven novicia se convierte en institutriz de siete niños y les devuelve la música a su hogar.","Mejor Director"],
+["oscar",1966,"Un hombre para la eternidad","Fred Zinnemann","Reino Unido","Tomás Moro se niega a traicionar su conciencia ante las exigencias matrimoniales de Enrique VIII.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1967,"En el calor de la noche","Norman Jewison","EE. UU.","Un detective negro de Filadelfia se ve forzado a investigar un asesinato en un pueblo racista de Misisipi.","Mejor Actor, Mejor Guion"],
+["oscar",1968,"Oliver!","Carol Reed","Reino Unido","Un huérfano londinense cae en manos de una banda de jóvenes carteristas dirigida por el astuto Fagin.","Mejor Director"],
+["oscar",1969,"Cowboy de medianoche","John Schlesinger","EE. UU.","Un vaquero texano llega a Nueva York para prostituirse y traba una entrañable amistad con un estafador enfermo.","Mejor Director, Mejor Guion"],
+["oscar",1970,"Patton","Franklin J. Schaffner","EE. UU.","Retrato del brillante y polémico general estadounidense George S. Patton durante la Segunda Guerra Mundial.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1971,"French Connection","William Friedkin","EE. UU.","Dos detectives de Nueva York persiguen una gran red de tráfico de heroína procedente de Francia.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1972,"El padrino","Francis Ford Coppola","EE. UU.","El hijo menor de una familia de la mafia neoyorquina asume el mando del imperio criminal familiar.","Mejor Actor, Mejor Guion"],
+["oscar",1973,"El golpe","George Roy Hill","EE. UU.","Dos estafadores urden un elaborado timo para vengar la muerte de un amigo a manos de un gánster.","Mejor Director, Mejor Guion"],
+["oscar",1974,"El padrino, parte II","Francis Ford Coppola","EE. UU.","La saga de los Corleone continúa entre el ascenso de un joven Vito y la decadencia de Michael.","Mejor Director, Mejor Actor de reparto, Mejor Guion"],
+["oscar",1975,"Alguien voló sobre el nido del cuco","Milos Forman","EE. UU.","Un preso simula locura para cumplir su condena en un psiquiátrico y choca con la autoritaria enfermera Ratched.","Mejor Director, Mejor Actor, Mejor Actriz, Mejor Guion"],
+["oscar",1976,"Rocky","John G. Avildsen","EE. UU.","Un boxeador de poca monta de Filadelfia recibe una oportunidad inesperada de pelear por el título mundial.","Mejor Director"],
+["oscar",1977,"Annie Hall","Woody Allen","EE. UU.","Un cómico neurótico neoyorquino repasa su fallida relación con una cantante excéntrica y libre.","Mejor Director, Mejor Actriz, Mejor Guion"],
+["oscar",1978,"El cazador","Michael Cimino","EE. UU.","Un grupo de amigos de un pueblo obrero ve su vida transformada por la guerra de Vietnam.","Mejor Director, Mejor Actor de reparto"],
+["oscar",1979,"Kramer contra Kramer","Robert Benton","EE. UU.","Un padre aprende a criar solo a su hijo cuando su esposa lo abandona y luego reclama la custodia.","Mejor Director, Mejor Actor, Mejor Actriz de reparto, Mejor Guion"],
+["oscar",1980,"Gente corriente","Robert Redford","EE. UU.","Una familia acomodada se resquebraja tras la muerte accidental de uno de los hijos.","Mejor Director, Mejor Actor de reparto, Mejor Guion"],
+["oscar",1981,"Carros de fuego","Hugh Hudson","Reino Unido","Dos atletas británicos de orígenes muy distintos compiten en los Juegos Olímpicos de 1924.","Mejor Guion"],
+["oscar",1982,"Gandhi","Richard Attenborough","Reino Unido","Biografía de Mahatma Gandhi y su lucha pacifista por la independencia de la India del dominio británico.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1983,"La fuerza del cariño","James L. Brooks","EE. UU.","Tres décadas en la compleja y tierna relación entre una madre posesiva y su hija.","Mejor Director, Mejor Actriz, Mejor Actor de reparto, Mejor Guion"],
+["oscar",1984,"Amadeus","Milos Forman","EE. UU.","El compositor Antonio Salieri, devorado por la envidia, se obsesiona con el genio irreverente de Mozart.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1985,"Memorias de África","Sydney Pollack","EE. UU.","Una baronesa danesa gestiona una plantación en Kenia y vive un apasionado romance con un cazador.","Mejor Director, Mejor Guion"],
+["oscar",1986,"Platoon","Oliver Stone","EE. UU.","Un joven recluta estadounidense descubre el horror moral de la guerra de Vietnam sobre el terreno.","Mejor Director"],
+["oscar",1987,"El último emperador","Bernardo Bertolucci","Reino Unido","La vida de Puyi, el último emperador de China, desde el trono infantil hasta la vida como ciudadano corriente.","Mejor Director, Mejor Guion"],
+["oscar",1988,"Rain Man","Barry Levinson","EE. UU.","Un joven ambicioso descubre que tiene un hermano autista savant y emprende con él un viaje que los transforma.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1989,"Paseando a Miss Daisy","Bruce Beresford","EE. UU.","Una anciana judía del Sur y su chófer negro construyen una amistad a lo largo de veinticinco años.","Mejor Actriz, Mejor Guion"],
+["oscar",1990,"Bailando con lobos","Kevin Costner","EE. UU.","Un teniente de la Unión convive con una tribu sioux y termina integrándose en su cultura.","Mejor Director, Mejor Guion"],
+["oscar",1991,"El silencio de los corderos","Jonathan Demme","EE. UU.","Una joven agente del FBI recurre a un brillante psiquiatra caníbal para atrapar a un asesino en serie.","Mejor Director, Mejor Actor, Mejor Actriz, Mejor Guion"],
+["oscar",1992,"Sin perdón","Clint Eastwood","EE. UU.","Un pistolero retirado vuelve a la acción por una última recompensa que reabre viejas heridas.","Mejor Director, Mejor Actor de reparto"],
+["oscar",1993,"La lista de Schindler","Steven Spielberg","EE. UU.","Un empresario alemán salva a más de mil judíos del Holocausto empleándolos en su fábrica.","Mejor Director, Mejor Guion"],
+["oscar",1994,"Forrest Gump","Robert Zemeckis","EE. UU.","Un hombre de bondad e inocencia excepcionales atraviesa sin proponérselo los grandes hitos de la historia reciente de EE. UU.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",1995,"Braveheart","Mel Gibson","EE. UU.","El escocés William Wallace lidera una rebelión contra la opresión del rey inglés Eduardo I.","Mejor Director"],
+["oscar",1996,"El paciente inglés","Anthony Minghella","EE. UU.","Un hombre gravemente quemado revive en el lecho de muerte una historia de amor prohibido en el norte de África.","Mejor Director, Mejor Actriz de reparto"],
+["oscar",1997,"Titanic","James Cameron","EE. UU.","Dos jóvenes de clases opuestas viven un romance a bordo del transatlántico condenado a hundirse.","Mejor Director"],
+["oscar",1998,"Shakespeare enamorado","John Madden","EE. UU.","Un joven William Shakespeare halla la inspiración para Romeo y Julieta en un amor imposible.","Mejor Actriz, Mejor Actriz de reparto, Mejor Guion"],
+["oscar",1999,"American Beauty","Sam Mendes","EE. UU.","Un hombre de mediana edad, insatisfecho con su vida, se rebela contra las convenciones de su entorno suburbano.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",2000,"Gladiator","Ridley Scott","EE. UU.","Un general romano traicionado es reducido a esclavitud y busca venganza como gladiador en el Coliseo.","Mejor Actor"],
+["oscar",2001,"Una mente maravillosa","Ron Howard","EE. UU.","El matemático John Nash lucha contra la esquizofrenia mientras desarrolla teorías que cambiarán la economía.","Mejor Director, Mejor Actriz de reparto, Mejor Guion"],
+["oscar",2002,"Chicago","Rob Marshall","EE. UU.","Dos mujeres presas por asesinato compiten por la fama en el mundo del espectáculo y los tribunales de Chicago.","Mejor Actriz de reparto"],
+["oscar",2003,"El señor de los anillos: El retorno del rey","Peter Jackson","Nueva Zelanda","Frodo se acerca al Monte del Destino mientras Aragorn se prepara para reclamar su trono en la batalla final.","Mejor Director, Mejor Guion"],
+["oscar",2004,"Million Dollar Baby","Clint Eastwood","EE. UU.","Un veterano entrenador de boxeo acepta a regañadientes entrenar a una boxeadora decidida a triunfar.","Mejor Director, Mejor Actriz, Mejor Actor de reparto"],
+["oscar",2005,"Crash","Paul Haggis","EE. UU.","Las vidas de varios habitantes de Los Ángeles de distintas razas colisionan a lo largo de un día.","Mejor Guion"],
+["oscar",2006,"Infiltrados","Martin Scorsese","EE. UU.","Un policía infiltrado en la mafia y un mafioso infiltrado en la policía se buscan mutuamente en Boston.","Mejor Director, Mejor Guion"],
+["oscar",2007,"No es país para viejos","Joel y Ethan Coen","EE. UU.","Un hombre que encuentra dinero de un trato de drogas fallido es perseguido por un asesino implacable.","Mejor Director, Mejor Actor de reparto, Mejor Guion"],
+["oscar",2008,"Slumdog Millionaire","Danny Boyle","Reino Unido","Un joven de los suburbios de Bombay recuerda su vida mientras participa en un concurso televisivo.","Mejor Director, Mejor Guion"],
+["oscar",2009,"En tierra hostil","Kathryn Bigelow","EE. UU.","Un equipo de artificieros estadounidenses desactiva bombas en el caos de la guerra de Irak.","Mejor Director, Mejor Guion"],
+["oscar",2010,"El discurso del rey","Tom Hooper","Reino Unido","El rey Jorge VI trabaja con un excéntrico terapeuta del habla para superar su tartamudez ante la guerra inminente.","Mejor Director, Mejor Actor, Mejor Guion"],
+["oscar",2011,"The Artist","Michel Hazanavicius","Francia","Una estrella del cine mudo ve peligrar su carrera con la llegada del sonoro y el ascenso de una joven actriz.","Mejor Director, Mejor Actor"],
+["oscar",2012,"Argo","Ben Affleck","EE. UU.","La CIA organiza un rodaje falso para rescatar a diplomáticos estadounidenses ocultos en Teherán durante la crisis de los rehenes.","Mejor Guion"],
+["oscar",2013,"12 años de esclavitud","Steve McQueen","Reino Unido","Un hombre negro libre del norte de EE. UU. es secuestrado y vendido como esclavo en el Sur.","Mejor Actriz de reparto, Mejor Guion"],
+["oscar",2014,"Birdman","Alejandro G. Iñárritu","EE. UU.","Un actor conocido por interpretar a un superhéroe intenta reinventarse montando una obra en Broadway.","Mejor Director, Mejor Guion, Mejor Fotografía"],
+["oscar",2015,"Spotlight","Tom McCarthy","EE. UU.","Un equipo de periodistas del Boston Globe destapa el encubrimiento de abusos sexuales en la Iglesia católica.","Mejor Guion"],
+["oscar",2016,"Moonlight","Barry Jenkins","EE. UU.","Un joven negro y gay crece entre la pobreza y la violencia de Miami en tres etapas de su vida.","Mejor Actor de reparto, Mejor Guion"],
+["oscar",2017,"La forma del agua","Guillermo del Toro","EE. UU.","Una empleada de limpieza muda se enamora de una misteriosa criatura anfibia retenida en un laboratorio secreto.","Mejor Director"],
+["oscar",2018,"Green Book","Peter Farrelly","EE. UU.","Un pianista negro contrata a un rudo chófer ítaloamericano para una gira por el Sur segregado de los años 60.","Mejor Actor de reparto, Mejor Guion"],
+["oscar",2019,"Parásitos","Bong Joon-ho","Corea del Sur","Una familia pobre se infiltra poco a poco en la vida de una familia adinerada de Seúl.","Mejor Director, Mejor Guion, Mejor Película Internacional"],
+["oscar",2020,"Nomadland","Chloé Zhao","EE. UU.","Una mujer que ha perdido su hogar recorre el oeste de EE. UU. viviendo en una furgoneta como nómada moderna.","Mejor Director, Mejor Actriz"],
+["oscar",2021,"CODA","Sian Heder","EE. UU.","La única oyente de una familia sorda debe elegir entre su pasión por el canto y ayudar al negocio familiar.","Mejor Actor de reparto, Mejor Guion"],
+["oscar",2022,"Everything Everywhere All at Once","Daniel Kwan, Daniel Scheinert","EE. UU.","Una mujer agobiada por su lavandería y Hacienda descubre que puede saltar entre universos paralelos.","Mejor Director, Mejor Actriz, Mejor Actor de reparto, Mejor Actriz de reparto, Mejor Guion"],
+["oscar",2023,"Oppenheimer","Christopher Nolan","EE. UU.","El físico J. Robert Oppenheimer lidera el desarrollo de la bomba atómica y después carga con sus consecuencias morales.","Mejor Director, Mejor Actor, Mejor Actor de reparto"],
+["oscar",2024,"Anora","Sean Baker","EE. UU.","Una bailarina de striptease de Brooklyn se casa impulsivamente con el hijo de un oligarca ruso.","Mejor Director, Mejor Actriz, Mejor Guion, Mejor Montaje"],
+
+// ================= CANNES: PALMA DE ORO =================
+["cannes",1955,"Marty","Delbert Mann","EE. UU.","Un carnicero de Nueva York, tímido y solitario, encuentra el amor cuando menos lo espera.",""],
+["cannes",1956,"El mundo del silencio","Jacques-Yves Cousteau, Louis Malle","Francia","Documental pionero que explora las profundidades marinas junto al comandante Jacques-Yves Cousteau.",""],
+["cannes",1957,"Testigo de cargo","William Wyler","EE. UU.","Una familia cuáquera de Indiana debe decidir si tomar las armas cuando estalla la Guerra de Secesión.",""],
+["cannes",1958,"Cuando vuelan las cigüeñas","Mijaíl Kalatozov","Unión Soviética","Una joven espera el regreso de su prometido, alistado en la guerra, mientras su vida se derrumba.",""],
+["cannes",1959,"Orfeo Negro","Marcel Camus","Francia/Brasil","El mito de Orfeo y Eurídice se reimagina durante el carnaval de Río de Janeiro.",""],
+["cannes",1960,"La dolce vita","Federico Fellini","Italia","Un periodista de la crónica social recorre la noche romana entre celebridades, excesos y desencanto.",""],
+["cannes",1961,"Viridiana","Luis Buñuel","España/México","Una novicia a punto de tomar los votos visita a su tío y descubre un mundo de miserias y deseo.",""],
+["cannes",1961,"Una ausencia tan larga","Henri Colpi","Francia","Una mujer cree reconocer a su marido, desaparecido en la guerra, en un vagabundo amnésico.","(ex aequo con Viridiana)"],
+["cannes",1962,"El pagador de promesas","Anselmo Duarte","Brasil","Un campesino carga una cruz para cumplir una promesa religiosa y choca con la burocracia de la Iglesia.",""],
+["cannes",1963,"El Gatopardo","Luchino Visconti","Italia","Un aristócrata siciliano observa cómo su mundo se desmorona con la unificación de Italia.",""],
+["cannes",1964,"Los paraguas de Cherburgo","Jacques Demy","Francia","Musical enteramente cantado sobre un amor juvenil truncado por la guerra de Argelia.",""],
+["cannes",1965,"Un maravilloso timo","Richard Lester","Reino Unido","Un profesor tímido pide consejo a un amigo seductor para conquistar a una joven recién llegada a Londres.",""],
+["cannes",1966,"Un hombre y una mujer","Claude Lelouch","Francia","Dos viudos, unidos por sus hijos, inician tímidamente una relación marcada por el duelo.",""],
+["cannes",1967,"Blow-Up","Michelangelo Antonioni","Reino Unido","Un fotógrafo londinense cree haber captado un crimen al revelar accidentalmente unas fotos tomadas en un parque.",""],
+["cannes",1969,"If....","Lindsay Anderson","Reino Unido","Un grupo de alumnos rebeldes se subleva contra la disciplina opresiva de un internado inglés.",""],
+["cannes",1970,"M*A*S*H","Robert Altman","EE. UU.","El humor negro de un grupo de cirujanos militares ayuda a sobrellevar el caos de la guerra de Corea.",""],
+["cannes",1971,"El mensajero","Joseph Losey","Reino Unido","Un niño hace de mensajero secreto entre dos amantes de distinta clase social en la Inglaterra eduardiana.",""],
+["cannes",1972,"La clase obrera va al paraíso","Elio Petri","Italia","Un obrero entregado a la fábrica sufre un accidente que lo empuja hacia la conciencia sindical.","(ex aequo)"],
+["cannes",1972,"El caso Mattei","Francesco Rosi","Italia","Investigación sobre la vida y la muerte, envuelta en misterio, del magnate petrolero italiano Enrico Mattei.","(ex aequo)"],
+["cannes",1973,"The Hireling","Alan Bridges","Reino Unido","Un chófer se enamora en secreto de la aristócrata a la que transporta tras la Primera Guerra Mundial.","(ex aequo)"],
+["cannes",1973,"Espantapájaros","Jerry Schatzberg","EE. UU.","Dos vagabundos, un exconvicto y un exmarinero, recorren EE. UU. soñando con abrir un lavadero de coches.","(ex aequo)"],
+["cannes",1974,"La conversación","Francis Ford Coppola","EE. UU.","Un experto en vigilancia se obsesiona con una grabación que sugiere un crimen inminente.",""],
+["cannes",1975,"Crónica de los años de brasa","Mohammed Lakhdar-Hamina","Argelia","Un campesino argelino atraviesa las décadas previas al estallido de la guerra de independencia.",""],
+["cannes",1976,"Taxi Driver","Martin Scorsese","EE. UU.","Un taxista insomne y alienado de Nueva York se hunde en una espiral de violencia y redención imaginada.",""],
+["cannes",1977,"Padre padrone","Paolo y Vittorio Taviani","Italia","Un joven pastor sardo, sometido por su padre, lucha por acceder a la educación y a una vida propia.",""],
+["cannes",1978,"El árbol de los zuecos","Ermanno Olmi","Italia","La vida cotidiana de varias familias campesinas en la Lombardía de finales del siglo XIX.",""],
+["cannes",1979,"Apocalypse Now","Francis Ford Coppola","EE. UU.","Un capitán remonta un río de Vietnam en busca de un coronel renegado convertido en un dios para su tropa.","(ex aequo)"],
+["cannes",1979,"El tambor de hojalata","Volker Schlöndorff","Alemania Occidental","Un niño decide dejar de crecer a los tres años como protesta contra el mundo de los adultos y el nazismo.","(ex aequo)"],
+["cannes",1980,"La sombra del guerrero","Akira Kurosawa","Japón","Un ladrón sin recursos es adiestrado para suplantar a un señor feudal japonés recién fallecido.","(ex aequo)"],
+["cannes",1980,"Empieza el espectáculo","Bob Fosse","EE. UU.","Un coreógrafo adicto al trabajo y a los excesos repasa su vida mientras el corazón lo va traicionando.","(ex aequo)"],
+["cannes",1981,"El hombre de hierro","Andrzej Wajda","Polonia","Un periodista investiga a un líder obrero del sindicato Solidaridad durante las huelgas de Gdansk.",""],
+["cannes",1982,"Yol, el camino","Yılmaz Güney","Turquía","Cinco presos turcos disfrutan de un permiso de una semana que revela las duras realidades de su país.","(ex aequo)"],
+["cannes",1982,"Missing (Desaparecido)","Costa-Gavras","EE. UU.","Un padre estadounidense busca a su hijo desaparecido durante el golpe de Estado chileno de 1973.","(ex aequo)"],
+["cannes",1983,"La balada de Narayama","Shohei Imamura","Japón","En un pueblo rural japonés, la tradición obliga a los ancianos a subir a morir a una montaña sagrada.",""],
+["cannes",1984,"París, Texas","Wim Wenders","Alemania Occidental/Francia","Un hombre reaparece tras años perdido en el desierto y emprende un viaje para reconstruir su familia rota.",""],
+["cannes",1985,"Papá está en viaje de negocios","Emir Kusturica","Yugoslavia","Un niño narra, sin entenderlo del todo, el arresto político de su padre en la Yugoslavia de Tito.",""],
+["cannes",1986,"La misión","Roland Joffé","Reino Unido","Un jesuita y un mercenario arrepentido defienden una misión guaraní amenazada por los intereses coloniales.",""],
+["cannes",1987,"Bajo el sol de Satán","Maurice Pialat","Francia","Un atormentado sacerdote rural libra una lucha espiritual entre la fe, la culpa y la tentación.",""],
+["cannes",1988,"Pelle el conquistador","Bille August","Dinamarca","Un niño sueco emigrado a Dinamarca con su padre sueña con una vida mejor mientras sobrevive a la explotación agrícola.",""],
+["cannes",1989,"Sexo, mentiras y cintas de vídeo","Steven Soderbergh","EE. UU.","La llegada de un extraño con una peculiar afición destapa las tensiones sexuales de dos matrimonios.",""],
+["cannes",1990,"Corazón salvaje","David Lynch","EE. UU.","Una pareja huye a través de un EE. UU. surrealista y violento perseguida por sicarios contratados por la madre de ella.",""],
+["cannes",1991,"Barton Fink","Joel Coen","EE. UU.","Un dramaturgo neoyorquino sufre un bloqueo creativo al mudarse a Hollywood para escribir guiones de serie B.",""],
+["cannes",1992,"Las mejores intenciones","Bille August","Suecia","Sobre un guion de Ingmar Bergman, retrata el turbulento noviazgo de los padres del propio cineasta sueco.",""],
+["cannes",1993,"Adiós a mi concubina","Chen Kaige","China","Dos actores de la ópera de Pekín ven su amistad puesta a prueba por décadas de convulsión política.","(ex aequo)"],
+["cannes",1993,"El piano","Jane Campion","Australia/Nueva Zelanda","Una mujer muda emigra a Nueva Zelanda con su piano y su hija para un matrimonio concertado.","(ex aequo)"],
+["cannes",1994,"Pulp Fiction","Quentin Tarantino","EE. UU.","Las historias de varios criminales de Los Ángeles se entrelazan en un mosaico narrativo no lineal.",""],
+["cannes",1995,"Underground","Emir Kusturica","Yugoslavia/Francia","Un grupo de yugoslavos vive engañado durante décadas creyendo que la Segunda Guerra Mundial nunca terminó.",""],
+["cannes",1996,"Secretos y mentiras","Mike Leigh","Reino Unido","Una mujer negra localiza a su madre biológica blanca, desencadenando secretos familiares largamente ocultos.",""],
+["cannes",1997,"La anguila","Shohei Imamura","Japón","Un hombre recién salido de prisión por asesinato intenta rehacer su vida regentando una peluquería junto a una anguila.","(ex aequo)"],
+["cannes",1997,"El sabor de las cerezas","Abbas Kiarostami","Irán","Un hombre recorre las afueras de Teherán buscando a alguien que lo ayude a llevar a cabo su suicidio.","(ex aequo)"],
+["cannes",1998,"La eternidad y un día","Theo Angelopoulos","Grecia","Un escritor terminal pasa su último día acompañando a un niño refugiado albanés por las calles de Salónica.",""],
+["cannes",1999,"Rosetta","Jean-Pierre y Luc Dardenne","Bélgica","Una adolescente que vive en una caravana lucha desesperadamente por conseguir y conservar un empleo estable.",""],
+["cannes",2000,"Bailar en la oscuridad","Lars von Trier","Dinamarca","Una inmigrante checa que se está quedando ciega ahorra en secreto para salvar la vista de su hijo.",""],
+["cannes",2001,"La habitación del hijo","Nanni Moretti","Italia","Un psicoanalista y su familia deben aprender a convivir con el duelo tras la muerte repentina de su hijo.",""],
+["cannes",2002,"El pianista","Roman Polanski","Francia/Polonia","Un pianista judío polaco lucha por sobrevivir en el gueto de Varsovia durante la ocupación nazi.","Mejor Director, Mejor Actor (Óscar)"],
+["cannes",2003,"Elephant","Gus Van Sant","EE. UU.","Un día cualquiera en un instituto estadounidense se ve interrumpido por un tiroteo escolar.",""],
+["cannes",2004,"Fahrenheit 9/11","Michael Moore","EE. UU.","Documental crítico sobre la respuesta de la administración Bush a los atentados del 11-S y la guerra de Irak.",""],
+["cannes",2005,"El niño","Jean-Pierre y Luc Dardenne","Bélgica","Un joven delincuente vende a su recién nacido en el mercado negro sin medir las consecuencias.",""],
+["cannes",2006,"El viento que agita la cebada","Ken Loach","Reino Unido/Irlanda","Dos hermanos irlandeses luchan juntos contra los británicos y después se enfrentan entre sí en la guerra civil.",""],
+["cannes",2007,"4 meses, 3 semanas, 2 días","Cristian Mungiu","Rumanía","Dos estudiantes universitarias afrontan un aborto clandestino en la Rumanía comunista de los años 80.",""],
+["cannes",2008,"La clase","Laurent Cantet","Francia","Un profesor de instituto en un barrio parisino difícil navega las tensiones del aula durante un curso escolar.",""],
+["cannes",2009,"La cinta blanca","Michael Haneke","Alemania","Una serie de sucesos inquietantes sacude un pueblo alemán protestante justo antes de la Primera Guerra Mundial.",""],
+["cannes",2010,"Tío Boonmee, el que recuerda sus vidas pasadas","Apichatpong Weerasethakul","Tailandia","Un hombre moribundo recibe la visita de los fantasmas de su pasado en la selva tailandesa.",""],
+["cannes",2011,"El árbol de la vida","Terrence Malick","EE. UU.","Un hombre reflexiona sobre su infancia en Texas y el origen mismo del universo y la vida.",""],
+["cannes",2012,"Amor","Michael Haneke","Austria/Francia","Un anciano matrimonio de músicos jubilados afronta la enfermedad y el declive de uno de ellos.",""],
+["cannes",2013,"La vida de Adèle","Abdellatif Kechiche","Francia","Una adolescente descubre el amor, el deseo y su propia identidad junto a una joven pintora de pelo azul.",""],
+["cannes",2014,"Sueño de invierno","Nuri Bilge Ceylan","Turquía","Un antiguo actor convertido en hotelero de Anatolia se enfrenta a las tensiones con su joven esposa y su hermana.",""],
+["cannes",2015,"Dheepan","Jacques Audiard","Francia","Tres desconocidos tamiles se hacen pasar por familia para huir de la guerra civil y rehacer su vida en Francia.",""],
+["cannes",2016,"Yo, Daniel Blake","Ken Loach","Reino Unido","Un carpintero enfermo choca contra la burocracia del sistema de prestaciones sociales británico.",""],
+["cannes",2017,"The Square","Ruben Östlund","Suecia","El comisario de un museo de arte contemporáneo ve su vida trastocada tras el robo de su móvil y su cartera.",""],
+["cannes",2018,"Un asunto de familia","Hirokazu Kore-eda","Japón","Una familia de pequeños hurtos acoge a una niña maltratada y redefine lo que significa ser familia.",""],
+["cannes",2019,"Parásitos","Bong Joon-ho","Corea del Sur","Una familia pobre se infiltra poco a poco en la vida de una familia adinerada de Seúl.","Mejor Película, Mejor Director, Mejor Guion (Óscar)"],
+["cannes",2021,"Titane","Julia Ducournau","Francia","Una mujer con una placa de titanio en el cráneo se ve envuelta en una espiral de violencia y transformación corporal.",""],
+["cannes",2022,"Triángulo de la tristeza","Ruben Östlund","Suecia","Una pareja de modelos embarca en un crucero de lujo para superricos que termina naufragando literal y socialmente.",""],
+["cannes",2023,"Anatomía de una caída","Justine Triet","Francia","Una escritora es sospechosa de la muerte de su marido, hallado bajo la nieve junto a su chalet de montaña.",""],
+["cannes",2024,"Anora","Sean Baker","EE. UU.","Una bailarina de striptease de Brooklyn se casa impulsivamente con el hijo de un oligarca ruso.","Mejor Película, Mejor Director (Óscar)"],
+["cannes",2025,"Un simple accidente","Jafar Panahi","Irán","Un grupo de exprisioneros iraníes cree reconocer por azar al torturador que marcó sus vidas en la cárcel.",""],
+["cannes",2026,"Fjord","Cristian Mungiu","Rumanía","Una familia de inmigrantes rumanos evangélicos choca con la burocracia y las normas de una comunidad noruega.",""],
+
+// ================= GOYA: MEJOR PELÍCULA =================
+["goya",1986,"El viaje a ninguna parte","Fernando Fernán Gómez","España","Una compañía de cómicos ambulantes de posguerra recorre los pueblos de España intentando sobrevivir del teatro.","Mejor Director, Mejor Guion"],
+["goya",1987,"El bosque animado","José Luis Cuerda","España","Fábula coral sobre los habitantes, vivos y fantasmales, de un bosque gallego de comienzos del siglo XX.",""],
+["goya",1988,"Mujeres al borde de un ataque de nervios","Pedro Almodóvar","España","Una actriz de doblaje al borde del colapso intenta hablar con su amante justo cuando él la abandona.","Mejor Actriz de reparto"],
+["goya",1989,"El sueño del mono loco","Fernando Trueba","España/Francia","Un guionista estadounidense en París se obsesiona con una joven mientras trabaja en un thriller.",""],
+["goya",1990,"¡Ay, Carmela!","Carlos Saura","España","Una pareja de cómicos ambulantes cae en manos de las tropas franquistas durante la Guerra Civil española.","Mejor Director, Mejor Guion adaptado, Mejor Actor, Mejor Actriz"],
+["goya",1991,"Amantes","Vicente Aranda","España","Un joven recién licenciado de la mili se debate entre su novia inocente y una viuda seductora y peligrosa.",""],
+["goya",1992,"Belle Époque","Fernando Trueba","España","Un joven desertor del ejército se refugia en la casa de un pintor viudo y sus cuatro hijas, en la España de 1931.","Mejor Director, Mejor Guion original (y Óscar a Mejor Película de Habla No Inglesa)"],
+["goya",1993,"Todos a la cárcel","Luis García Berlanga","España","Un grupo variopinto de personajes coincide en la cárcel con motivo de una amnistía a punto de aprobarse.","Mejor Director"],
+["goya",1994,"Días contados","Imanol Uribe","España","Un etarra encubierto en Madrid se enamora de una joven heroinómana mientras prepara un atentado.","Mejor Director, Mejor Guion adaptado"],
+["goya",1995,"Nadie hablará de nosotras cuando hayamos muerto","Agustín Díaz Yanes","España","Una mujer regresa a Madrid tras huir a México y se ve envuelta en el mundo del boxeo y el crimen.","Mejor Director novel, Mejor Actriz, Mejor Guion original"],
+["goya",1996,"Tesis","Alejandro Amenábar","España","Una estudiante de audiovisuales que investiga la violencia en la pantalla descubre una snuff movie real.","Mejor Director novel, Mejor Guion original"],
+["goya",1997,"La buena estrella","Ricardo Franco","España","Un carnicero solitario acoge a una mujer maltratada y a su hija, y forma con ellas una familia inesperada.","Mejor Actor"],
+["goya",1998,"La niña de tus ojos","Fernando Trueba","España","Un equipo de cine español rueda una coproducción en la Alemania nazi de 1938.","Mejor Actriz"],
+["goya",1999,"Todo sobre mi madre","Pedro Almodóvar","España","Una madre viaja a Barcelona tras la muerte de su hijo en busca del padre transexual que nunca conoció.","Mejor Director, Mejor Actriz de reparto (y Óscar a Mejor Película Internacional)"],
+["goya",2000,"El Bola","Achero Mañas","España","Un niño madrileño maltratado por su padre encuentra refugio en la amistad con un nuevo compañero de clase.","Mejor Director novel, Mejor Actor revelación"],
+["goya",2001,"Los otros","Alejandro Amenábar","España","Una madre protege a sus hijos, fotosensibles, en una mansión de la posguerra aparentemente encantada.","Mejor Director, Mejor Actriz"],
+["goya",2002,"Los lunes al sol","Fernando León de Aranoa","España","Un grupo de amigos desempleados tras el cierre de un astillero afronta el paro en una ciudad costera.","Mejor Director, Mejor Actor, Mejor Guion original"],
+["goya",2003,"Te doy mis ojos","Icíar Bollaín","España","Una mujer huye de casa con su hijo tras años de maltrato, y su marido intenta reconquistarla.","Mejor Director, Mejor Actor, Mejor Actriz, Mejor Guion original"],
+["goya",2004,"Mar adentro","Alejandro Amenábar","España","Un hombre tetrapléjico libra durante décadas una batalla legal y personal por el derecho a decidir su propia muerte.","Mejor Director, Mejor Actor, Mejor Actriz de reparto, Mejor Guion original (y Óscar a Mejor Película Internacional)"],
+["goya",2005,"La vida secreta de las palabras","Isabel Coixet","España","Una enfermera solitaria cuida a un hombre ciego temporal en una plataforma petrolífera y ambos revelan sus heridas.","Mejor Guion original"],
+["goya",2006,"Volver","Pedro Almodóvar","España","Varias mujeres de una misma familia manchega afrontan secretos, muertes y el inesperado regreso de un fantasma.","Mejor Actriz"],
+["goya",2007,"La soledad","Jaime Rosales","España","Las vidas de dos mujeres, madre e hija, se entrelazan con el dolor tras un atentado terrorista.","Mejor Director novel, Mejor Actriz de reparto"],
+["goya",2008,"Camino","Javier Fesser","España","Una niña de once años enferma de cáncer vive sus últimos meses entre la fe, la familia y sus primeros sentimientos.","Mejor Director, Mejor Actriz revelación, Mejor Guion original"],
+["goya",2009,"Celda 211","Daniel Monzón","España","Un funcionario de prisiones queda atrapado dentro durante un motín y debe hacerse pasar por preso para sobrevivir.","Mejor Director, Mejor Actor, Mejor Actor de reparto, Mejor Guion adaptado"],
+["goya",2010,"Pa negre","Agustí Villaronga","España","Un niño catalán de posguerra investiga un crimen que descubre las miserias morales de los adultos que lo rodean.","Mejor Director, Mejor Actriz, Mejor Guion adaptado"],
+["goya",2011,"No habrá paz para los malvados","Enrique Urbizu","España","Un policía violento y alcohólico se ve envuelto en una investigación sobre terrorismo tras un tiroteo nocturno.","Mejor Director, Mejor Actor, Mejor Guion original"],
+["goya",2012,"Blancanieves","Pablo Berger","España","Reinterpretación muda y en blanco y negro del cuento de Blancanieves ambientada en la España taurina de los años 20.","Mejor Actriz revelación, Mejor Fotografía"],
+["goya",2013,"Vivir es fácil con los ojos cerrados","David Trueba","España","Un profesor español viaja a Almería en 1966 con la esperanza de conocer a John Lennon durante un rodaje.","Mejor Director, Mejor Actor, Mejor Guion original"],
+["goya",2014,"La isla mínima","Alberto Rodríguez","España","Dos policías de estilos opuestos investigan la desaparición de dos jóvenes en las marismas del Guadalquivir de los 80.","Mejor Director, Mejor Actor, Mejor Fotografía, Mejor Guion original"],
+["goya",2015,"Truman","Cesc Gay","España","Un hombre viaja a Madrid para despedirse de un viejo amigo enfermo terminal y de su fiel perro, Truman.","Mejor Director, Mejor Actor, Mejor Guion original"],
+["goya",2016,"Tarde para la ira","Raúl Arévalo","España","Un hombre recién salido de la cárcel se acerca a la familia de su antiguo cómplice con un plan de venganza.","Mejor Director novel, Mejor Guion original"],
+["goya",2017,"La librería","Isabel Coixet","España","Una mujer decide abrir una librería en un pequeño pueblo costero inglés de los años 50 y se topa con la resistencia local.",""],
+["goya",2018,"Campeones","Javier Fesser","España","Un entrenador de baloncesto conflictivo es condenado a dirigir a un equipo formado por personas con discapacidad intelectual.",""],
+["goya",2019,"Dolor y gloria","Pedro Almodóvar","España","Un director de cine en declive físico y creativo repasa su vida, sus amores y su relación con el cine.","Mejor Director, Mejor Actor"],
+["goya",2020,"Las niñas","Pilar Palomero","España","Una niña de once años vive su primer año en un colegio religioso de Zaragoza en los años 90.","Mejor Director novel, Mejor Guion original, Mejor Fotografía"],
+["goya",2021,"El buen patrón","Fernando León de Aranoa","España","El dueño de una fábrica de básculas intenta controlar hasta el último detalle de la vida de sus empleados antes de una inspección.","Mejor Director, Mejor Actor, Mejor Guion original, Mejor Música, Mejor Montaje"],
+["goya",2022,"As bestas","Rodrigo Sorogoyen","España","Una pareja francesa instalada en un pueblo gallego entra en conflicto creciente con sus vecinos por un proyecto eólico.","Mejor Director, Mejor Actor, Mejor Actor de reparto, Mejor Guion original"],
+["goya",2023,"La sociedad de la nieve","J. A. Bayona","España","Los supervivientes de un accidente aéreo en los Andes luchan por sobrevivir en condiciones extremas durante más de dos meses.","Mejor Director, Mejor Actor revelación"],
+["goya",2024,"El 47","Marcel Barrena","España","Un conductor de autobús del barrio del Torre Baró lucha por conseguir una línea de transporte digna para su vecindad marginada.",""],
+["goya",2025,"Los domingos","Alauda Ruiz de Azúa","España","Una adolescente de dieciséis años anuncia a su familia que quiere hacerse monja de clausura, desatando el conflicto familiar.","Mejor Director, Mejor Actriz, Mejor Actriz de reparto, Mejor Guion original"],
+];
+
+RAW_MOVIES.push(...([["venice", 1949, "Manon", "Henri-Georges Clouzot", "Francia", "Una joven seductora y su amante desertor sobreviven en la Francia de posguerra."], ["venice", 1950, "Se hará justicia", "André Cayatte", "Francia", "Un jurado popular debate el destino de una mujer acusada de practicar la eutanasia."], ["venice", 1951, "Rashomon", "Akira Kurosawa", "Japón", "Cuatro versiones contradictorias de un mismo crimen en el Japón medieval."], ["venice", 1952, "Juegos prohibidos", "René Clément", "Francia", "Dos niños en plena guerra construyen un cementerio secreto para animales."], ["venice", 1954, "Romeo y Julieta", "Renato Castellani", "Reino Unido", "Adaptación fiel del drama de Shakespeare rodada en escenarios italianos."], ["venice", 1955, "Ordet (La palabra)", "Carl Theodor Dreyer", "Dinamarca", "Una familia campesina danesa vive un conflicto de fe y un posible milagro."], ["venice", 1957, "Aparajito", "Satyajit Ray", "India", "Un joven bengalí deja su pueblo para estudiar y se aleja de su madre."], ["venice", 1958, "El hombre del rickshaw", "Hiroshi Inagaki", "Japón", "Un rudo conductor de rickshaw ama en silencio a una viuda y a su hijo."], ["venice", 1959, "El general Della Rovere", "Roberto Rossellini", "Francia/Italia", "Un estafador se hace pasar por un general de la Resistencia en la Italia ocupada."], ["venice", 1959, "La gran guerra", "Mario Monicelli", "Italia", "Dos soldados cobardes y pícaros sobreviven a la Primera Guerra Mundial."], ["venice", 1960, "El paso del Rin", "André Cayatte", "Francia", "Dos prisioneros franceses vuelven de Alemania a una vida transformada por la guerra."], ["venice", 1961, "El año pasado en Marienbad", "Alain Resnais", "Francia", "En un hotel barroco, un hombre insiste en que conoció a una mujer el año anterior."], ["venice", 1962, "Crónica familiar", "Valerio Zurlini", "Italia", "Dos hermanos separados de niños se reencuentran en Florencia."], ["venice", 1962, "La infancia de Iván", "Andrei Tarkovsky", "Unión Soviética", "Un niño explorador soviético se infiltra tras las líneas nazis."], ["venice", 1963, "Las manos sobre la ciudad", "Francesco Rosi", "Italia", "Un constructor corrupto manipula la política para especular en Nápoles."], ["venice", 1964, "El desierto rojo", "Michelangelo Antonioni", "Italia", "Una mujer frágil se pierde entre la alienación industrial de Rávena."], ["venice", 1965, "Vagas estrellas de la Osa", "Luchino Visconti", "Italia", "Una mujer regresa a su ciudad natal y afronta secretos familiares."], ["venice", 1966, "La batalla de Argel", "Gillo Pontecorvo", "Argelia/Italia", "Recreación de la lucha del FLN contra el dominio colonial francés."], ["venice", 1967, "Belle de Jour", "Luis Buñuel", "Francia", "Una joven burguesa se prostituye por las tardes en un burdel."], ["venice", 1968, "Los artistas bajo la carpa del circo: desconcertados", "Alexander Kluge", "Alemania Occidental", "Una artista de circo intenta crear un circo reformado en la Alemania de posguerra."], ["venice", 1980, "Atlantic City", "Louis Malle", "Canadá/Francia", "Un viejo delincuente de poca monta y una crupier sueñan con una nueva vida."], ["venice", 1980, "Gloria", "John Cassavetes", "EE. UU.", "Una mujer dura protege a un niño perseguido por la mafia."], ["venice", 1981, "Los años de plomo", "Margarethe von Trotta", "Alemania Occidental", "Dos hermanas, una periodista y otra terrorista, siguen caminos opuestos."], ["venice", 1982, "El estado de las cosas", "Wim Wenders", "Alemania Occidental", "Un rodaje en Portugal queda paralizado al agotarse el dinero."], ["venice", 1983, "Nombre: Carmen", "Jean-Luc Godard", "Francia", "Una terrorista seduce a un guardia en una libre reinterpretación de Carmen."], ["venice", 1984, "Un año de sol tranquilo", "Krzysztof Zanussi", "Polonia", "Un amor entre una viuda polaca y un soldado estadounidense en 1946."], ["venice", 1985, "Sin techo ni ley", "Agnès Varda", "Francia", "Se reconstruye la muerte de una joven vagabunda a través de testimonios."], ["venice", 1986, "El rayo verde", "Éric Rohmer", "Francia", "Una joven solitaria busca el amor durante sus vacaciones de verano."], ["venice", 1987, "Adiós, muchachos", "Louis Malle", "Francia/Alemania Occidental", "Dos niños de un internado católico en la Francia ocupada comparten un secreto."], ["venice", 1988, "La leyenda del santo bebedor", "Ermanno Olmi", "Italia/Francia", "Un vagabundo recibe dinero de un desconocido y lucha por cumplir su promesa."], ["venice", 1989, "Ciudad doliente", "Hou Hsiao-hsien", "Taiwán", "Una familia taiwanesa vive los años del «terror blanco» tras el dominio japonés."], ["venice", 1990, "Rosencrantz y Guildenstern han muerto", "Tom Stoppard", "Reino Unido/EE. UU.", "Dos personajes menores de Hamlet descubren el absurdo de su destino."], ["venice", 1991, "Urga", "Nikita Mikhalkov", "Unión Soviética", "Un camionero ruso y un pastor mongol traban amistad en la estepa."], ["venice", 1992, "La historia de Qiu Ju", "Zhang Yimou", "China", "Una campesina embarazada reclama justicia tras la agresión a su marido."], ["venice", 1993, "Vidas cruzadas", "Robert Altman", "EE. UU.", "Varias historias de vecinos de Los Ángeles se entrecruzan."], ["venice", 1993, "Tres colores: Azul", "Krzysztof Kieślowski", "Francia/Polonia", "Una mujer intenta reconstruirse tras perder a su marido y a su hija."], ["venice", 1994, "Antes de la lluvia", "Milčo Mančevski", "Macedonia", "Tres historias circulares ambientadas en una Macedonia al borde de la guerra."], ["venice", 1994, "¡Viva el amor!", "Tsai Ming-liang", "Taiwán", "Tres solitarios comparten sin saberlo un apartamento vacío de Taipéi."], ["venice", 1995, "Cyclo", "Trần Anh Hùng", "Vietnam/Francia", "Un joven conductor de ciclo cae en el crimen en Ho Chi Minh."], ["venice", 1996, "Michael Collins", "Neil Jordan", "Irlanda/Reino Unido", "Biografía del líder del IRA durante la guerra de independencia irlandesa."], ["venice", 1997, "Hana-bi", "Takeshi Kitano", "Japón", "Un policía retirado cuida de su esposa enferma mientras huye de los yakuza."], ["venice", 1998, "Así reíamos", "Gianni Amelio", "Italia", "Dos hermanos sicilianos emigrados a Turín en los años 50."], ["venice", 1999, "Ni uno menos", "Zhang Yimou", "China", "Una niña maestra suplente busca a un alumno que se ha ido a la ciudad."], ["venice", 2000, "El círculo", "Jafar Panahi", "Irán", "Varias mujeres iraníes se cruzan en un día de opresión cotidiana."], ["venice", 2001, "La boda del monzón", "Mira Nair", "India", "Una boda punjabí reúne a una familia en Delhi entre tensiones y secretos."], ["venice", 2002, "Las hermanas de la Magdalena", "Peter Mullan", "Irlanda/Reino Unido", "Jóvenes internas de un asilo católico irlandés sufren abusos."], ["venice", 2003, "El regreso", "Andrey Zvyagintsev", "Rusia", "Dos hermanos viajan con el padre ausente que reaparece tras doce años."], ["venice", 2004, "El secreto de Vera Drake", "Mike Leigh", "Reino Unido", "Una mujer humilde practica abortos clandestinos en el Londres de los 50."], ["venice", 2005, "Brokeback Mountain", "Ang Lee", "EE. UU.", "Dos vaqueros mantienen una relación secreta durante décadas."], ["venice", 2006, "Naturaleza muerta", "Jia Zhangke", "China", "Dos personas buscan a sus parejas en una ciudad condenada a inundarse."], ["venice", 2007, "Deseo, peligro", "Ang Lee", "Taiwán/China/EE. UU.", "Una joven universitaria se implica con un colaboracionista en la Shanghái ocupada."], ["venice", 2008, "El luchador", "Darren Aronofsky", "EE. UU.", "Un veterano luchador de wrestling intenta rehacer su vida pese a su salud."], ["venice", 2009, "Líbano", "Samuel Maoz", "Israel", "Cuatro soldados dentro de un tanque en la guerra del Líbano de 1982."], ["venice", 2010, "Somewhere", "Sofia Coppola", "EE. UU.", "Una estrella de cine a la deriva redescubre el vínculo con su hija."], ["venice", 2011, "Fausto", "Alexander Sokurov", "Rusia", "Reinterpretación libre del mito de Fausto y su pacto."], ["venice", 2012, "Pietà", "Kim Ki-duk", "Corea del Sur", "Un cobrador brutal conoce a una mujer que dice ser su madre."], ["venice", 2013, "Sacro GRA", "Gianfranco Rosi", "Italia", "Documental sobre la gente que vive junto a la circunvalación de Roma."], ["venice", 2014, "Una paloma se posó en una rama reflexionando sobre la existencia", "Roy Andersson", "Suecia", "Escenas absurdas y tragicómicas sobre la condición humana."], ["venice", 2015, "Desde allá", "Lorenzo Vigas", "Venezuela", "Un hombre maduro entabla una relación turbia con un joven en Caracas."], ["venice", 2016, "La mujer que se fue", "Lav Diaz", "Filipinas", "Una mujer sale tras treinta años de cárcel injusta buscando venganza."], ["venice", 2017, "La forma del agua", "Guillermo del Toro", "EE. UU.", "Una empleada de limpieza muda se enamora de una misteriosa criatura anfibia retenida en un laboratorio secreto."], ["venice", 2018, "Roma", "Alfonso Cuarón", "México/EE. UU.", "La vida de una empleada doméstica en la Ciudad de México de 1970."], ["venice", 2019, "Joker", "Todd Phillips", "EE. UU.", "Un cómico fracasado se transforma en el criminal Joker."], ["venice", 2020, "Nomadland", "Chloé Zhao", "EE. UU.", "Una mujer que ha perdido su hogar recorre el oeste de EE. UU. viviendo en una furgoneta como nómada moderna."], ["venice", 2021, "El acontecimiento", "Audrey Diwan", "Francia", "Una estudiante busca abortar en la Francia de 1963, cuando era ilegal."], ["venice", 2022, "Toda la belleza y el derramamiento de sangre", "Laura Poitras", "EE. UU.", "Documental sobre la fotógrafa Nan Goldin y su lucha contra la familia Sackler."], ["venice", 2023, "Pobres criaturas", "Yorgos Lanthimos", "Irlanda/Reino Unido/EE. UU.", "Una joven resucitada descubre el mundo en un viaje de emancipación."], ["venice", 2024, "La habitación de al lado", "Pedro Almodóvar", "España", "Dos amigas se reencuentran cuando una, enferma de cáncer, decide acabar con su vida."], ["venice", 2025, "Padre madre hermana hermano", "Jim Jarmusch", "EE. UU./Irlanda/Francia", "Tres historias sobre hijos adultos y sus padres."], ["venice", 2026, "Woman Unknown", "May el-Toukhy", "Dinamarca/Suecia/Letonia", "Última ganadora del León de Oro (2026)."], ["berlin", 1952, "Ella sólo bailó un verano", "Arne Mattsson", "Suecia", "Un joven estudiante se enamora de una campesina durante un verano."], ["berlin", 1953, "El salario del miedo", "Henri-Georges Clouzot", "Francia/Italia", "Cuatro hombres conducen camiones cargados de nitroglicerina por montañas peligrosas."], ["berlin", 1954, "Hobson's Choice", "David Lean", "Reino Unido", "Una hija autoritaria impone su voluntad a su padre, zapatero tiránico."], ["berlin", 1955, "Die Ratten", "Robert Siodmak", "Alemania Occidental", "Drama sobre la miseria y las ambiciones en el Berlín de posguerra."], ["berlin", 1956, "Invitación a la danza", "Gene Kelly", "EE. UU.", "Película de danza en tres episodios, sin diálogos."], ["berlin", 1957, "Doce hombres sin piedad", "Sidney Lumet", "EE. UU.", "Un jurado decide la suerte de un joven acusado de asesinato."], ["berlin", 1958, "Fresas salvajes", "Ingmar Bergman", "Suecia", "Un anciano profesor repasa su vida durante un viaje para recibir un homenaje."], ["berlin", 1959, "Los primos", "Claude Chabrol", "Francia", "Dos primos, uno provinciano y otro libertino, comparten piso en París."], ["berlin", 1960, "El Lazarillo de Tormes", "César Fernández Ardavín", "España", "Adaptación de la novela picaresca del siglo XVI."], ["berlin", 1961, "La noche", "Michelangelo Antonioni", "Italia", "Un matrimonio de intelectuales vive una crisis durante una jornada en Milán."], ["berlin", 1962, "A Kind of Loving", "John Schlesinger", "Reino Unido", "Un joven dibujante se casa a la fuerza tras dejar embarazada a su novia."], ["berlin", 1963, "Bushido, la saga del samurái", "Tadashi Imai", "Japón", "Siete generaciones de una familia samurái sacrificadas por el código del honor."], ["berlin", 1963, "El diablo", "Gian Luigi Polidoro", "Italia", "Un italiano viaja a Suecia buscando aventuras con las mujeres."], ["berlin", 1964, "Verano seco", "Metin Erksan", "Turquía", "Dos hermanos se disputan el agua de un manantial en un pueblo turco."], ["berlin", 1965, "Alphaville", "Jean-Luc Godard", "Francia/Italia", "Un agente secreto llega a una ciudad futurista controlada por una computadora."], ["berlin", 1966, "Callejón sin salida", "Roman Polanski", "Reino Unido", "Dos gánsters heridos se refugian en un castillo y toman de rehenes a una pareja."], ["berlin", 1967, "La salida", "Jerzy Skolimowski", "Bélgica", "Un joven peluquero obsesionado con las carreras intenta conseguir un coche."], ["berlin", 1968, "Ole dole doff", "Jan Troell", "Suecia", "Drama sueco ambientado en un colegio."], ["berlin", 1969, "Primeras obras", "Želimir Žilnik", "Yugoslavia", "Jóvenes revolucionarios yugoslavos chocan con la realidad del socialismo."], ["berlin", 1971, "El jardín de los Finzi-Contini", "Vittorio De Sica", "Alemania Occidental/Italia", "Una familia judía aristocrática vive aislada en la Italia fascista."], ["berlin", 1972, "Los cuentos de Canterbury", "Pier Paolo Pasolini", "Italia", "Episodios picarescos basados en los cuentos de Chaucer."], ["berlin", 1973, "Trueno lejano", "Satyajit Ray", "India", "Una aldea bengalí sufre la hambruna de 1943."], ["berlin", 1974, "El aprendizaje de Duddy Kravitz", "Ted Kotcheff", "Canadá", "Un joven judío ambicioso de Montreal lucha por hacerse rico."], ["berlin", 1975, "Adopción", "Márta Mészáros", "Hungría", "Una mujer madura quiere adoptar a una joven de un internado."], ["berlin", 1976, "Buffalo Bill y los indios", "Robert Altman", "EE. UU.", "Sátira sobre el mito de Buffalo Bill y su espectáculo del Oeste."], ["berlin", 1977, "La ascensión", "Larisa Shepitko", "Unión Soviética", "Dos partisanos soviéticos capturados por los nazis afrontan el sacrificio."], ["berlin", 1978, "Ascensor", "Tomás Muñoz", "España", "Compartió el Oso de Oro de 1978 con otras dos películas españolas."], ["berlin", 1978, "Las truchas", "José Luis García Sánchez", "España", "Compartió el Oso de Oro de 1978 con otras dos películas españolas."], ["berlin", 1978, "Lo que Max dijo", "Emilio Martínez-Lázaro", "España", "Compartió el Oso de Oro de 1978 con otras dos películas españolas."], ["berlin", 1979, "David", "Peter Lilienthal", "Alemania Occidental", "Un joven judío vive la persecución nazi en Alemania."], ["berlin", 1980, "Heartland", "Richard Pearce", "EE. UU.", "Una viuda se instala como ama de llaves en un rancho de Wyoming en 1910."], ["berlin", 1980, "Palermo o Wolfsburg", "Werner Schroeter", "Alemania Occidental", "Un joven siciliano emigra a Wolfsburg para trabajar en la fábrica Volkswagen."], ["berlin", 1981, "Deprisa, deprisa", "Carlos Saura", "España", "Un grupo de jóvenes delincuentes de Madrid vive al límite."], ["berlin", 1982, "La ansiedad de Veronika Voss", "Rainer Werner Fassbinder", "Alemania Occidental", "Una actriz decadente de los años 50 cae bajo el control de una médica adicta."], ["berlin", 1983, "Ascendancy", "Edward Bennett", "Reino Unido", "Drama sobre el ocaso de una familia de la élite anglo-irlandesa."], ["berlin", 1983, "La colmena", "Mario Camus", "España", "Retrato coral del Madrid de posguerra basado en la novela de Cela."], ["berlin", 1984, "Corrientes de amor", "John Cassavetes", "EE. UU.", "Un escritor y su hermana, ambos en crisis afectiva, se acercan."], ["berlin", 1985, "Wetherby", "David Hare", "Reino Unido", "Un joven irrumpe en una cena y se suicida, trastornando a una maestra."], ["berlin", 1985, "La mujer y el extraño", "Rainer Simon", "Alemania Oriental", "Un soldado alemán desertor de la Primera Guerra Mundial se refugia con una mujer."], ["berlin", 1986, "Stammheim", "Reinhard Hauff", "Alemania Occidental", "Reconstruye el juicio contra el grupo Baader-Meinhof."], ["berlin", 1987, "El tema", "Gleb Panfilov", "Unión Soviética", "Un escritor soviético vive una crisis creativa y moral tras su éxito oficial."], ["berlin", 1988, "Sorgo rojo", "Zhang Yimou", "China", "Una joven vendida al dueño de una destilería vive bajo la invasión japonesa."], ["berlin", 1988, "Rain Man", "Barry Levinson", "EE. UU.", "Un joven ambicioso descubre que tiene un hermano autista savant y emprende con él un viaje que los transforma."], ["berlin", 1990, "Alondras en el hilo", "Jiří Menzel", "Checoslovaquia", "Obreros y burgueses «reeducados» trabajan en un vertedero comunista."], ["berlin", 1990, "La caja de música", "Costa-Gavras", "EE. UU.", "Una abogada defiende a su padre, acusado de crímenes nazis."], ["berlin", 1991, "La casa de la sonrisa", "Marco Ferreri", "Italia", "Una pareja de ancianos se enamora en un asilo."], ["berlin", 1992, "Gran Cañón", "Lawrence Kasdan", "EE. UU.", "Varias vidas de Los Ángeles se cruzan tras un incidente violento."], ["berlin", 1993, "El banquete de bodas", "Ang Lee", "Taiwán/EE. UU.", "Un gay taiwanés en Nueva York finge casarse con una mujer para tranquilizar a sus padres."], ["berlin", 1993, "La mujer del aceite de sésamo", "Xie Fei", "China", "Una mujer rural vive las tensiones de la modernización."], ["berlin", 1994, "En el nombre del padre", "Jim Sheridan", "Reino Unido/Irlanda", "Un irlandés es condenado injustamente junto a su padre por un atentado."], ["berlin", 1995, "El cebo", "Bertrand Tavernier", "Francia", "Tres jóvenes parisinos cometen asesinatos por ambición económica."], ["berlin", 1996, "Sentido y sensibilidad", "Ang Lee", "EE. UU.", "Dos hermanas inglesas buscan amor y estabilidad tras perder su herencia."], ["berlin", 1997, "El escándalo de Larry Flynt", "Miloš Forman", "EE. UU.", "Biografía del editor de Hustler y su lucha por la libertad de expresión."], ["berlin", 1998, "Estación Central de Brasil", "Walter Salles", "Brasil/Francia", "Una escribana de cartas y un niño buscan al padre de este por Brasil."], ["berlin", 1999, "La delgada línea roja", "Terrence Malick", "EE. UU.", "Soldados estadounidenses viven la batalla de Guadalcanal."], ["berlin", 2000, "Magnolia", "Paul Thomas Anderson", "EE. UU.", "Varias vidas atribuladas de Los Ángeles se entrecruzan en un día."], ["berlin", 2001, "Intimidad", "Patrice Chéreau", "Francia", "Un hombre y una mujer se encuentran para tener sexo sin saber nada del otro."], ["berlin", 2002, "Bloody Sunday", "Paul Greengrass", "Reino Unido/Irlanda", "Reconstrucción de la masacre del Domingo Sangriento de Derry en 1972."], ["berlin", 2002, "El viaje de Chihiro", "Hayao Miyazaki", "Japón", "Una niña entra en un mundo de espíritus para salvar a sus padres."], ["berlin", 2003, "En este mundo", "Michael Winterbottom", "Reino Unido", "Dos jóvenes afganos viajan clandestinamente hacia Londres."], ["berlin", 2004, "Contra la pared", "Fatih Akin", "Alemania/Turquía", "Dos turcos-alemanes con vidas rotas se casan por conveniencia."], ["berlin", 2005, "U-Carmen eKhayelitsha", "Mark Dornford-May", "Sudáfrica", "Versión de Carmen en un municipio sudafricano, cantada en xhosa."], ["berlin", 2006, "Grbavica", "Jasmila Žbanić", "Bosnia y Herzegovina", "Una madre sarajevita oculta a su hija el origen de su nacimiento."], ["berlin", 2007, "El matrimonio de Tuya", "Wang Quan'an", "China", "Una pastora de Mongolia Interior busca nuevo marido sin abandonar al anterior."], ["berlin", 2008, "Tropa de élite", "José Padilha", "Brasil", "Un capitán del BOPE busca a su sustituto mientras combate el narcotráfico en Río."], ["berlin", 2009, "La teta asustada", "Claudia Llosa", "España/Perú", "Una joven peruana teme haber heredado el miedo de su madre, víctima del terrorismo."], ["berlin", 2010, "Miel", "Semih Kaplanoğlu", "Turquía", "Un niño tímido sueña con su padre, apicultor desaparecido."], ["berlin", 2011, "Nader y Simin, una separación", "Asghar Farhadi", "Irán", "Un divorcio y un conflicto con una cuidadora desatan un drama moral."], ["berlin", 2012, "César debe morir", "Paolo y Vittorio Taviani", "Italia", "Reclusos de una cárcel italiana representan Julio César."], ["berlin", 2013, "La posición del niño", "Călin Peter Netzer", "Rumanía", "Una madre dominante intenta salvar a su hijo tras un atropello mortal."], ["berlin", 2014, "Fuegos artificiales en pleno día", "Diao Yinan", "China", "Un expolicía investiga asesinatos con restos hallados en carbón."], ["berlin", 2015, "Taxi Teherán", "Jafar Panahi", "Irán", "Panahi conduce un taxi por Teherán captando retratos de la sociedad iraní."], ["berlin", 2016, "Fuocoammare", "Gianfranco Rosi", "Italia/Francia", "Documental sobre Lampedusa y la crisis migratoria."], ["berlin", 2017, "Cuerpo y alma", "Ildikó Enyedi", "Hungría", "Dos empleados de un matadero comparten sueños idénticos."], ["berlin", 2018, "No me toques", "Adina Pintilie", "Rumanía", "Retrato experimental sobre la intimidad y el contacto físico."], ["berlin", 2019, "Sinónimos", "Nadav Lapid", "Francia/Israel", "Un israelí llega a París y rechaza su identidad."], ["berlin", 2020, "No hay maldad", "Mohammad Rasoulof", "Irán", "Cuatro historias sobre la pena de muerte y la responsabilidad."], ["berlin", 2021, "Mala suerte para follar o porno loco", "Radu Jude", "Rumanía", "Una profesora sufre un escándalo por un vídeo sexual filtrado."], ["berlin", 2022, "Alcarràs", "Carla Simón", "España/Italia", "Una familia de agricultores catalanes afronta su último verano de cosecha."], ["berlin", 2023, "Sobre el Adamant", "Nicolas Philibert", "Francia/Japón", "Documental sobre un centro de día psiquiátrico flotante en París."], ["berlin", 2024, "Dahomey", "Mati Diop", "Francia/Senegal/Benín", "Documental sobre la restitución de tesoros reales al actual Benín."], ["berlin", 2025, "Dreams (Sex Love)", "Dag Johan Haugerud", "Noruega", "Una adolescente se enamora de su profesora y lo escribe."], ["berlin", 2026, "Yellow Letters", "İlker Çatak", "Alemania/Francia/Turquía", "Último ganador del Oso de Oro (2026)."]]).map(r=>[...r,""]));
+
+const AWARD_META = {
+  oscar:  { label:"Óscar",  color:"#cf9e3f", full:"Óscar a la Mejor Película" },
+  cannes: { label:"Cannes", color:"#a5312f", full:"Palma de Oro (Festival de Cannes)" },
+  goya:   { label:"Goya",   color:"#3e6b63", full:"Goya a la Mejor Película" },
+  venice: { label:"Venecia", color:"#6b5b95", full:"León de Oro (Festival de Venecia)" },
+  berlin: { label:"Berlín", color:"#4d7ea8", full:"Oso de Oro (Festival de Berlín)" },
+};
+
+function slugify(s){
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+}
+
+const MOVIES = RAW_MOVIES.map(([award,year,title,director,country,synopsis,otherAwards])=>{
+  const id = `${award}-${year}-${slugify(title)}`;
+  return { id, award, year, title, director, country, synopsis, otherAwards };
+});
+const TWIN_KEY = m=>m.title+"|"+m.director;
+const TWINS = {};
+MOVIES.forEach(m=>{ (TWINS[TWIN_KEY(m)] = TWINS[TWIN_KEY(m)] || []).push(m); });
+const twinsOf = m=>TWINS[TWIN_KEY(m)];
+const isPrimary = m=>twinsOf(m)[0]===m;
+const UNIQUE_TOTAL = MOVIES.filter(isPrimary).length;
+const seen = new Set();
+let wishlist = new Set();
+let searchQ = "";
+const MOVIES_BY_ID = Object.fromEntries(MOVIES.map(m=>[m.id,m]));
+
+/* ---------------------------------------------------------------------
+   ESTADO Y ALMACENAMIENTO
+--------------------------------------------------------------------- */
+let watched = {}; // id -> {rating, watchedAt}
+let currentMovie = null;
+let activeFilters = new Set(["oscar","cannes","goya","venice","berlin"]);
+let viewMode = "all"; // all | unwatched | watched
+let selectedRating = null;
+let pendingFilters = new Set(["oscar","cannes","goya","venice","berlin"]);
+let watchedFilters = new Set(["oscar","cannes","goya","venice","berlin"]);
+let sortMode = { history:"default", ranking:"default", pending:"default" };
+
+const footnote = document.getElementById("footnote");
+
+const LS_KEY = "cinepremiadas:v1";
+function persist(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify({ watched, wishlist:[...wishlist] })); setFootnote(true); }
+  catch(e){ setFootnote(false); }
+}
+function setFootnote(ok){
+  footnote.innerHTML = (ok ? '<span class="status-ok">●</span> Guardado en este navegador' : '<span class="status-bad">●</span> No se puede guardar en este navegador (modo privado o almacenamiento bloqueado)')
+    + '<br><a href="#" id="expBtn">Exportar copia</a> · <a href="#" id="impBtn">Importar copia</a><input type="file" id="impFile" accept="application/json" style="display:none">';
+  document.getElementById("expBtn").onclick = (e)=>{ e.preventDefault();
+    const blob = new Blob([JSON.stringify({ watched, wishlist:[...wishlist] }, null, 2)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "cinepremiadas-copia.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000); };
+  document.getElementById("impBtn").onclick = (e)=>{ e.preventDefault(); document.getElementById("impFile").click(); };
+  document.getElementById("impFile").onchange = (e)=>{
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{ try{ const d = JSON.parse(r.result); watched = d.watched || {}; wishlist = new Set(d.wishlist || []); persist(); renderAll(); showToast("Copia importada"); }catch(err){ showToast("Archivo no válido"); } };
+    r.readAsText(f);
+  };
+}
+function initStorage(){
+  try{
+    const d = JSON.parse(localStorage.getItem(LS_KEY) || "null");
+    if(d){
+      watched = d.watched || {};
+      wishlist = new Set(d.wishlist || []);
+    }
+    setFootnote(true);
+  }catch(e){ setFootnote(false); }
+  renderAll();
+}
+
+async function saveWatched(movie, rating, comment="", dateStr=""){
+  const ts = dateStr ? new Date(dateStr+"T12:00:00").getTime() : ((watched[movie.id]&&watched[movie.id].watchedAt) || Date.now());
+  const ts_ = twinsOf(movie);
+  ts_.forEach(t=>{ watched[t.id] = { rating, comment, watchedAt: ts, title:t.title, award:t.award, year:t.year }; });
+  renderAll();
+  persist();
+}
+async function unwatch(movie){
+  const ts_ = twinsOf(movie);
+  ts_.forEach(t=>{ delete watched[t.id]; });
+  renderAll();
+  persist();
+}
+async function toggleWish(movie){
+  const on = !wishlist.has(movie.id);
+  if(on) wishlist.add(movie.id); else wishlist.delete(movie.id);
+  renderAll();
+  persist();
+}
+
+/* ---------------------------------------------------------------------
+   TABS
+--------------------------------------------------------------------- */
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    document.getElementById("view-"+btn.dataset.view).classList.add("active");
+    if(btn.dataset.view === "collection") renderCollection();
+  });
+});
+
+let subTab = "history";
+document.querySelectorAll(".sub-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".sub-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    subTab = btn.dataset.sub;
+    renderCollection();
+  });
+});
+
+/* ---------------------------------------------------------------------
+   FILTROS Y MODO
+--------------------------------------------------------------------- */
+function renderFilters(){
+  const wrap = document.getElementById("filters");
+  wrap.innerHTML = "";
+  Object.entries(AWARD_META).forEach(([key, meta])=>{
+    const count = MOVIES.filter(m=>m.award===key).length;
+    const label = document.createElement("label");
+    label.className = "chip" + (activeFilters.has(key) ? " on" : "");
+    label.style.setProperty("--dot-color", meta.color);
+    label.innerHTML = `<input type="checkbox" ${activeFilters.has(key)?"checked":""}>
+      <span class="dot"></span>${meta.label} <small>(${count})</small>`;
+    label.querySelector("input").addEventListener("change", (e)=>{
+      if(e.target.checked) activeFilters.add(key); else activeFilters.delete(key);
+      if(activeFilters.size===0){ activeFilters.add(key); e.target.checked = true; }
+      renderFilters();
+      updateRollState();
+    });
+    wrap.appendChild(label);
+  });
+}
+
+function renderModeRow(){
+  const wrap = document.getElementById("modeRow");
+  const modes = [
+    { key:"all", label:"Todas" },
+    { key:"unwatched", label:"Aún no vistas" },
+    { key:"watched", label:"Ya vistas" },
+  ];
+  wrap.innerHTML = "";
+  modes.forEach(m=>{
+    const b = document.createElement("button");
+    b.className = "mode-btn" + (viewMode===m.key ? " active" : "");
+    b.textContent = m.label;
+    b.addEventListener("click", ()=>{
+      viewMode = m.key;
+      renderModeRow();
+      updateRollState();
+    });
+    wrap.appendChild(b);
+  });
+}
+
+function getPool(){
+  return MOVIES.filter(m=>{
+    if(!activeFilters.has(m.award)) return false;
+    const dv = document.getElementById("decadeSel").value, cv = document.getElementById("countrySel").value;
+    if(dv && Math.floor(m.year/10)*10 !== +dv) return false;
+    if(cv && !m.country.split("/").map(x=>x.trim()).includes(cv)) return false;
+    const isWatched = !!watched[m.id];
+    if(viewMode==="unwatched" && isWatched) return false;
+    if(viewMode==="watched" && !isWatched) return false;
+    return true;
+  });
+}
+
+function updateRollState(){
+  const btn = document.getElementById("rollBtn");
+  const hint = document.getElementById("rollHint");
+  const pool = getPool();
+  btn.disabled = pool.length === 0;
+  hint.textContent = pool.length === 0
+    ? "No hay películas con este filtro — prueba a cambiarlo"
+    : pool.length + " película" + (pool.length===1?"":"s") + " en el filtro actual";
+  renderProgress();
+}
+
+function renderProgress(){
+  const total = MOVIES.filter(m=>activeFilters.has(m.award)).length;
+  const done = MOVIES.filter(m=>activeFilters.has(m.award) && watched[m.id]).length;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById("progressCard").innerHTML = `
+    <div class="pnum">${pct}%</div>
+    <div class="pbar-wrap">
+      <div class="plabel"><span>Reto: verlas todas</span><span>${done} / ${total}</span></div>
+      <div class="pbar"><div style="width:${pct}%"></div></div>
+    </div>
+  `;
+}
+
+/* ---------------------------------------------------------------------
+   SELECTOR ALEATORIO
+--------------------------------------------------------------------- */
+function pickRandom(){
+  const pool = getPool(); if(!pool.length) return null;
+  let fresh = pool.filter(m=>!seen.has(m.id) && !(currentMovie && m.id===currentMovie.id));
+  if(!fresh.length){ seen.clear(); fresh = pool.filter(m=>!currentMovie || m.id!==currentMovie.id); if(!fresh.length) fresh = pool; showToast("Has recorrido todas: reiniciamos el sorteo"); }
+  const m = fresh[Math.floor(Math.random()*fresh.length)];
+  twinsOf(m).forEach(t=>seen.add(t.id));
+  return m;
+}
+let rolling = false;
+function roll(){
+  const pool = getPool(); if(!pool.length || rolling) return;
+  rolling = true;
+  const hint = document.getElementById("rollHint"); let i = 0;
+  const t = setInterval(()=>{
+    hint.textContent = "🎞️ " + pool[Math.floor(Math.random()*pool.length)].title;
+    if(++i >= 10){ clearInterval(t); rolling = false; currentMovie = pickRandom(); selectedRating = null; renderCard(); updateRollState(); }
+  }, 70);
+}
+document.getElementById("rollBtn").addEventListener("click", roll);
+(function initSel(){
+  const dec = document.getElementById("decadeSel"), cou = document.getElementById("countrySel");
+  [...new Set(MOVIES.map(m=>Math.floor(m.year/10)*10))].sort().forEach(d=>dec.insertAdjacentHTML("beforeend",`<option value="${d}">Años ${d}</option>`));
+  [...new Set(MOVIES.flatMap(m=>m.country.split("/").map(x=>x.trim())))].sort((a,b)=>a.localeCompare(b)).forEach(c=>cou.insertAdjacentHTML("beforeend",`<option>${c}</option>`));
+  dec.addEventListener("change", updateRollState); cou.addEventListener("change", updateRollState);
+})();
+
+function renderCard(){
+  const holder = document.getElementById("cardHolder");
+  if(!currentMovie){ holder.innerHTML=""; return; }
+  const m = currentMovie;
+  const meta = AWARD_META[m.award];
+  const w = watched[m.id];
+
+  holder.innerHTML = `
+    <div class="card" style="--card-accent:${meta.color}">
+      <div class="poster" style="background:linear-gradient(135deg,${meta.color},#1a1410)"><span>${m.year}</span><em>${m.title}</em></div>
+      <span class="badge"><span class="dot"></span>${twinsOf(m).map(t=>AWARD_META[t.award].label).join(" + ")} · ${m.year}${((m.award==="oscar"||m.award==="goya") && m.year>=1934) ? " (premiada en "+(m.year+1)+")" : ""}</span>
+      <h2 class="display">${m.title}</h2>
+      <div class="meta"><b>${m.director}</b><span class="sep">·</span>${m.country}</div>
+      <div class="synopsis">${m.synopsis}</div>
+      ${m.otherAwards ? `<div class="otherawards">🏆 <span><b>También ganó:</b> ${m.otherAwards}</span></div>` : ""}
+      <div class="links">
+        <a target="_blank" rel="noopener" href="https://www.filmaffinity.com/es/search.php?stext=${encodeURIComponent(m.title+" "+m.year)}">Filmaffinity</a>
+        <a target="_blank" rel="noopener" href="https://www.imdb.com/find/?q=${encodeURIComponent(m.title+" "+m.year)}">IMDb</a>
+        <a target="_blank" rel="noopener" href="https://www.justwatch.com/es/buscar?q=${encodeURIComponent(m.title)}">Dónde verla</a>
+      </div>
+      <div class="actions" id="cardActions"></div>
+      <div class="rate-box" id="rateBox">
+        <label>¿Qué nota le das? (1–10)</label>
+        <div class="rate-row" id="ratePips"></div>
+        <div class="rate-extra">
+          <div><label>Fecha de visionado</label><input type="date" id="rateDate"></div>
+          <div><label>Comentario (opcional)</label><textarea id="rateComment" placeholder="¿Qué te ha parecido?"></textarea></div>
+        </div>
+        <div class="rate-confirm">
+          <button class="btn primary" id="confirmRate">Guardar valoración</button>
+          <button class="btn" id="cancelRate">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const actions = document.getElementById("cardActions");
+  actions.innerHTML = "";
+
+  if(w){
+    const tag = document.createElement("span");
+    tag.className = "watched-tag";
+    tag.innerHTML = `✓ Vista — tu nota: <b>${w.rating}/10</b>`;
+    actions.appendChild(tag);
+    const rerate = document.createElement("button");
+    rerate.className = "btn";
+    rerate.textContent = "Cambiar nota";
+    rerate.addEventListener("click", ()=>openRateBox(w.rating));
+    actions.appendChild(rerate);
+    const un = document.createElement("button"); un.className = "btn"; un.textContent = "Desmarcar como vista";
+    un.addEventListener("click", async ()=>{ await unwatch(m); showToast("Desmarcada: "+m.title); });
+    actions.appendChild(un);
+  }else{
+    const markBtn = document.createElement("button");
+    markBtn.className = "btn primary";
+    markBtn.textContent = "Marcar como vista";
+    markBtn.addEventListener("click", ()=>openRateBox(null));
+    actions.appendChild(markBtn);
+  }
+
+  const another = document.createElement("button");
+  another.className = "btn";
+  another.textContent = "🎲 Elegir otra";
+  another.addEventListener("click", roll);
+  actions.appendChild(another);
+  if(!w){
+    const wb = document.createElement("button"); wb.className = "btn";
+    wb.textContent = wishlist.has(m.id) ? "★ En tu lista" : "☆ Quiero verla pronto";
+    wb.addEventListener("click", ()=>toggleWish(m));
+    actions.appendChild(wb);
+  }
+}
+
+function openRateBox(preset){
+  selectedRating = preset;
+  const box = document.getElementById("rateBox");
+  box.classList.add("open");
+  const cw = watched[currentMovie.id];
+  document.getElementById("rateComment").value = cw && cw.comment ? cw.comment : "";
+  document.getElementById("rateDate").value = new Date(cw ? cw.watchedAt : Date.now()).toISOString().slice(0,10);
+  const pips = document.getElementById("ratePips");
+  pips.innerHTML = "";
+  for(let i=1;i<=10;i++){
+    const p = document.createElement("div");
+    p.className = "rate-pip" + (i===selectedRating ? " sel" : "");
+    p.textContent = i;
+    p.addEventListener("click", ()=>{
+      selectedRating = i;
+      pips.querySelectorAll(".rate-pip").forEach(el=>el.classList.remove("sel"));
+      p.classList.add("sel");
+    });
+    pips.appendChild(p);
+  }
+  document.getElementById("confirmRate").onclick = async ()=>{
+    if(selectedRating==null){ showToast("Elige una nota del 1 al 10"); return; }
+    await saveWatched(currentMovie, selectedRating, document.getElementById("rateComment").value.trim(), document.getElementById("rateDate").value);
+    showToast("Guardado: " + currentMovie.title + " — " + selectedRating + "/10");
+    renderCard();
+  };
+  document.getElementById("cancelRate").onclick = ()=>{ box.classList.remove("open"); };
+  box.scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+
+/* ---------------------------------------------------------------------
+   COLECCIÓN: HISTORIAL, RANKING Y POR VER
+--------------------------------------------------------------------- */
+function watchedList(){
+  const seenKeys = new Set();
+  return watchedListRaw().filter(x=>{ const k = TWIN_KEY(x); if(seenKeys.has(k)) return false; seenKeys.add(k); return true; });
+}
+function watchedListRaw(){
+  return Object.entries(watched).map(([id, w])=>{
+    const movie = MOVIES_BY_ID[id] || { title:w.title, award:w.award, year:w.year, director:"" };
+    return { id, ...movie, rating:w.rating, watchedAt:w.watchedAt };
+  });
+}
+
+function renderStats(){
+  const list = watchedList();
+  const avg = list.length ? (list.reduce((s,x)=>s+x.rating,0)/list.length).toFixed(1) : "—";
+  const best = list.length ? list.reduce((a,b)=> b.rating>a.rating? b:a) : null;
+  const row = document.getElementById("statRow");
+  row.innerHTML = `
+    <div class="stat"><div class="n">${list.length}</div><div class="l">Vistas</div></div>
+    <div class="stat"><div class="n">${avg}</div><div class="l">Nota media</div></div>
+    <div class="stat"><div class="n">${UNIQUE_TOTAL - list.length}</div><div class="l">Por ver</div></div>
+  `;
+}
+function truncate(s,n){ return s.length>n ? s.slice(0,n-1)+"…" : s; }
+
+function buildAwardChipsHtml(filterSet, counts){
+  return Object.entries(AWARD_META).map(([key, meta])=>{
+    const count = counts[key] || 0;
+    const on = filterSet.has(key);
+    return `<label class="chip${on?' on':''}" data-key="${key}" style="--dot-color:${meta.color}">
+      <input type="checkbox" ${on?"checked":""}>
+      <span class="dot"></span>${meta.label} <small>(${count})</small>
+    </label>`;
+  }).join("");
+}
+
+function attachAwardChipsListeners(container, filterSet, rerender){
+  container.querySelectorAll(".chip").forEach(label=>{
+    label.querySelector("input").addEventListener("change", (e)=>{
+      const key = label.getAttribute("data-key");
+      if(e.target.checked) filterSet.add(key); else filterSet.delete(key);
+      if(filterSet.size===0){ filterSet.add(key); e.target.checked = true; }
+      rerender();
+    });
+  });
+}
+
+function applySort(items, tab){
+  const mode = sortMode[tab];
+  const out = items.slice();
+  if(mode === "year-asc"){
+    out.sort((a,b)=> a.year - b.year || a.title.localeCompare(b.title));
+  }else if(mode === "year-desc"){
+    out.sort((a,b)=> b.year - a.year || a.title.localeCompare(b.title));
+  }else if(tab === "history"){
+    out.sort((a,b)=> b.watchedAt - a.watchedAt);
+  }else if(tab === "ranking"){
+    out.sort((a,b)=> b.rating - a.rating || a.title.localeCompare(b.title));
+  }else{
+    out.sort((a,b)=> a.title.localeCompare(b.title));
+  }
+  return out;
+}
+
+function buildSortSelectHtml(tab){
+  const mode = sortMode[tab];
+  const defaultLabel = tab==="history" ? "Vistas más recientes" : tab==="ranking" ? "Mejor puntuadas" : "Alfabético";
+  return `<div class="sort-row">
+    <label class="sort-label">Ordenar por</label>
+    <select class="sort-select" id="sortSelect">
+      <option value="default" ${mode==="default"?"selected":""}>${defaultLabel}</option>
+      <option value="year-asc" ${mode==="year-asc"?"selected":""}>Año de estreno ↑ (antiguas primero)</option>
+      <option value="year-desc" ${mode==="year-desc"?"selected":""}>Año de estreno ↓ (recientes primero)</option>
+    </select>
+  </div>`;
+}
+
+function attachSortSelectListener(container, tab){
+  const sel = container.querySelector("#sortSelect");
+  if(!sel) return;
+  sel.addEventListener("change", (e)=>{
+    sortMode[tab] = e.target.value;
+    renderCollection();
+  });
+}
+
+function renderCollectionInner(){
+  renderStats();
+  document.querySelectorAll(".sub-btn").forEach(b=>b.classList.toggle("active", b.dataset.sub===subTab));
+  const body = document.getElementById("collectionBody");
+  document.getElementById("shareBtn").style.display = subTab==="ranking" ? "" : "none";
+  document.getElementById("searchInput").style.display = subTab==="stats" ? "none" : "";
+  if(subTab === "stats"){ renderStatsTab(body); return; }
+
+  if(subTab === "pending"){
+    const allPending = MOVIES.filter(m=>!watched[m.id] && isPrimary(m));
+    if(allPending.length===0){
+      body.innerHTML = `<div class="empty"><div class="display">¡Reto completado!</div>Has visto todas las películas de la base de datos.</div>`;
+      return;
+    }
+    const counts = {};
+    allPending.forEach(m=> counts[m.award] = (counts[m.award]||0)+1);
+    const pending0 = applySort(allPending.filter(m=>pendingFilters.has(m.award)), "pending");
+    const pending = pending0.filter(m=>wishlist.has(m.id)).concat(pending0.filter(m=>!wishlist.has(m.id)));
+
+    const filtersHtml = buildAwardChipsHtml(pendingFilters, counts);
+    const listHtml = pending.length ? pending.map(m=>{
+      const meta = AWARD_META[m.award];
+      return `<div class="row pending" data-q="${(m.title+' '+m.director).toLowerCase()}">
+        <div class="info">
+          <h4>${wishlist.has(m.id)?'<span class="wish-star">★</span> ':''}${m.title}</h4>
+          <div class="sub"><span style="color:${meta.color}">${meta.label}</span> · ${m.year} · ${m.country}</div>
+        </div>
+        <button class="mark-btn" data-pick="${m.id}">Ver ficha</button>
+      </div>`;
+    }).join("") : `<div class="empty">No te queda ninguna por ver con este filtro.</div>`;
+
+    body.innerHTML = `<div class="filters">${filtersHtml}</div>${buildSortSelectHtml("pending")}<div class="list">${listHtml}</div>`;
+    attachAwardChipsListeners(body, pendingFilters, renderCollection);
+    attachSortSelectListener(body, "pending");
+    body.querySelectorAll("[data-pick]").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const movie = MOVIES_BY_ID[el.getAttribute("data-pick")];
+        document.querySelector('.tab-btn[data-view="discover"]').click();
+        currentMovie = movie;
+        selectedRating = null;
+        renderCard();
+      });
+    });
+    return;
+  }
+
+  const fullList = watchedList();
+  if(fullList.length===0){
+    body.innerHTML = `<div class="empty"><div class="display">Aún no has visto ninguna</div>Marca películas como vistas desde “Descubrir” para construir tu historial y tu ranking.</div>`;
+    return;
+  }
+
+  const watchedCounts = {};
+  fullList.forEach(x=> watchedCounts[x.award] = (watchedCounts[x.award]||0)+1);
+  const filtersHtml = buildAwardChipsHtml(watchedFilters, watchedCounts);
+  const filtered = fullList.filter(x=>watchedFilters.has(x.award));
+  const list = applySort(filtered, subTab);
+
+  let itemsHtml;
+  if(list.length===0){
+    itemsHtml = `<div class="empty">No tienes películas vistas con este filtro.</div>`;
+  }else if(subTab === "history"){
+    itemsHtml = list.map(x=>rowHtml(x, formatDate(x.watchedAt))).join("");
+  }else{
+    itemsHtml = list.map((x,i)=>rowHtml(x, null, sortMode.ranking==="default" ? i+1 : null)).join("");
+  }
+
+  body.innerHTML = `<div class="filters">${filtersHtml}</div>${buildSortSelectHtml(subTab)}<div class="list">${itemsHtml}</div>`;
+  attachAwardChipsListeners(body, watchedFilters, renderCollection);
+  attachSortSelectListener(body, subTab);
+
+  body.querySelectorAll("[data-edit]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const id = el.getAttribute("data-edit");
+      const movie = MOVIES_BY_ID[id];
+      if(!movie) return;
+      document.querySelector('.tab-btn[data-view="discover"]').click();
+      currentMovie = movie;
+      renderCard();
+      openRateBox(watched[id] ? watched[id].rating : null);
+    });
+  });
+}
+
+function rowHtml(x, dateStr, pos){
+  const meta = AWARD_META[x.award] || {label:x.award, color:"#888"};
+  return `
+    <div class="row" data-q="${(x.title+' '+(x.director||'')).toLowerCase()}">
+      ${pos ? `<div class="pos">${pos}</div>` : ""}
+      <div class="info">
+        <h4>${x.title}</h4>
+        <div class="sub">
+          <span style="color:${meta.color}">${meta.label}</span> · ${x.year}
+          ${dateStr ? "· visto " + dateStr : ""}
+        </div>
+        ${x.comment ? `<div class="cmt">“${x.comment.replace(/</g,"&lt;")}”</div>` : ""}
+      </div>
+      <div class="score">${x.rating}</div>
+      <button class="edit" data-edit="${x.id}">editar</button>
+    </div>
+  `;
+}
+
+function formatDate(ts){
+  const d = new Date(ts);
+  return d.toLocaleDateString("es-ES", { day:"numeric", month:"short", year:"numeric" });
+}
+
+/* ---------------------------------------------------------------------
+   TOAST
+--------------------------------------------------------------------- */
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove("show"), 2600);
+}
+
+/* ---------------------------------------------------------------------
+   INIT
+--------------------------------------------------------------------- */
+function applySearch(){
+  const q = searchQ.trim().toLowerCase();
+  document.querySelectorAll("#collectionBody .row[data-q]").forEach(r=>{ r.style.display = (!q || r.getAttribute("data-q").includes(q)) ? "" : "none"; });
+}
+function renderCollection(){ renderCollectionInner(); applySearch(); }
+document.getElementById("searchInput").addEventListener("input", e=>{ searchQ = e.target.value; applySearch(); });
+
+function barsHtml(title, entries){
+  if(!entries.length) return "";
+  return `<div class="stat-h">${title}</div>` + entries.map(([l,avg,n])=>`<div class="bar-row"><div class="bl">${l}</div><div class="bt"><div style="width:${avg*10}%"></div></div><div class="bv">${avg.toFixed(1)} <small style="color:var(--ink-faint);font-weight:400">(${n})</small></div></div>`).join("");
+}
+function groupAvg(list, keyFn, min){
+  const g = {};
+  list.forEach(x=>{ keyFn(x).forEach(k=>{ (g[k] = g[k] || []).push(x.rating); }); });
+  return Object.entries(g).filter(([k,a])=>a.length>=min).map(([k,a])=>[k, a.reduce((s,v)=>s+v,0)/a.length, a.length]).sort((a,b)=>b[1]-a[1]||b[2]-a[2]);
+}
+function renderStatsTab(body){
+  const list = watchedList();
+  if(list.length < 1){ body.innerHTML = `<div class="empty"><div class="display">Sin datos todavía</div>Valora algunas películas para ver tus estadísticas.</div>`; return; }
+  body.innerHTML =
+    barsHtml("Nota media por premio", groupAvg(list, x=>twinsOf(MOVIES_BY_ID[x.id]||x).map(t=>(AWARD_META[t.award]||{label:t.award}).label), 1)) +
+    barsHtml("Nota media por década", groupAvg(list, x=>["Años "+Math.floor(x.year/10)*10], 1).sort((a,b)=>a[0].localeCompare(b[0]))) +
+    barsHtml("Por país (2+ películas)", groupAvg(list, x=>((MOVIES_BY_ID[x.id]||{}).country||"").split("/").map(c=>c.trim()).filter(Boolean), 2).slice(0,8)) +
+    barsHtml("Directores favoritos (2+ películas)", groupAvg(list, x=>((MOVIES_BY_ID[x.id]||{}).director||"").split(/,| y /).map(c=>c.trim()).filter(Boolean), 2).slice(0,8));
+}
+
+document.getElementById("shareBtn").addEventListener("click", ()=>{
+  const top = watchedList().sort((a,b)=>b.rating-a.rating||a.title.localeCompare(b.title)).slice(0,10);
+  if(!top.length){ showToast("Aún no hay películas valoradas"); return; }
+  const text = "🎬 Mi ranking CinePremiadas\n" + top.map((x,i)=>`${i+1}. ${x.title} (${x.year}) — ${x.rating}/10`).join("\n");
+  const c = document.createElement("canvas"); c.width = 900; c.height = 180 + top.length*70;
+  const g = c.getContext("2d");
+  g.fillStyle = "#0e0d0b"; g.fillRect(0,0,c.width,c.height);
+  g.fillStyle = "#e6c878"; g.font = "bold 44px Georgia, serif"; g.fillText("CinePremiadas · Mi ranking", 50, 85);
+  top.forEach((x,i)=>{
+    g.fillStyle = "#8b8071"; g.font = "28px Georgia, serif"; g.fillText(String(i+1), 50, 170+i*70);
+    g.fillStyle = "#f2ece1"; g.font = "30px Georgia, serif"; g.fillText(x.title.length>38 ? x.title.slice(0,37)+"…" : x.title, 105, 170+i*70);
+    g.fillStyle = "#cf9e3f"; g.font = "bold 30px Georgia, serif"; g.textAlign = "right"; g.fillText(x.rating+"/10", 850, 170+i*70); g.textAlign = "left";
+  });
+  const m = document.createElement("div"); m.className = "modal";
+  m.innerHTML = `<div class="modal-box"><img alt="Ranking" src="${c.toDataURL("image/png")}"><textarea readonly>${text}</textarea><div class="actions" style="display:flex;gap:10px"><button class="btn primary" id="cpTxt">Copiar texto</button><button class="btn" id="clModal">Cerrar</button></div><div style="font-size:11.5px;color:var(--ink-faint);margin-top:8px">Para guardar la imagen, mantén pulsada (móvil) o clic derecho (ordenador).</div></div>`;
+  document.body.appendChild(m);
+  m.querySelector("#clModal").onclick = ()=>m.remove();
+  m.addEventListener("click", e=>{ if(e.target===m) m.remove(); });
+  m.querySelector("#cpTxt").onclick = ()=>{ const ta = m.querySelector("textarea"); ta.select(); try{ document.execCommand("copy"); showToast("Copiado"); }catch(e){ showToast("Selecciona y copia el texto"); } };
+});
+
+function renderAll(){
+  renderCard();
+  renderProgress();
+  if(document.getElementById("view-collection").classList.contains("active")) renderCollection();
+}
+
+renderFilters();
+renderModeRow();
+updateRollState();
+initStorage();
+</script>
+</body>
+</html>
