@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CinePremiadas · Películas premiadas al azar</title>
 <meta name="description" content="Descubre películas ganadoras del Óscar, la Palma de Oro, el Goya, el León de Oro y el Oso de Oro. Marca las que has visto y puntúalas.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src https://ghjsbcbeyjbldzjdnakt.supabase.co; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -207,6 +210,12 @@
   .modal-box{ background:var(--panel); border:1px solid var(--panel-line); border-radius:16px; padding:18px; max-width:480px; width:100%; max-height:92vh; overflow:auto; }
   .modal-box img{ width:100%; border-radius:10px; display:block; margin-bottom:10px; }
   .modal-box textarea{ width:100%; min-height:90px; background:var(--bg-soft); color:var(--ink); border:1px solid var(--panel-line); border-radius:10px; padding:8px; font-size:12px; margin-bottom:10px; }
+  .auth-box{ text-align:center; }
+  .auth-box h2{ font-family:'Fraunces',serif; margin:0 0 6px; }
+  .auth-box p{ color:var(--ink-dim); font-size:13.5px; margin:0 0 14px; }
+  .auth-box input{ width:100%; background:var(--bg-soft); color:var(--ink); border:1px solid var(--panel-line); border-radius:10px; padding:11px 12px; font-size:14px; margin-bottom:10px; }
+  .auth-box .btn{ width:100%; margin-bottom:8px; }
+  .auth-msg{ font-size:12.5px; color:var(--gold-soft); min-height:18px; }
   .toast{
     position:fixed; left:50%; bottom: calc(26px + var(--safe-bottom));
     transform: translateX(-50%) translateY(14px); opacity:0; pointer-events:none;
@@ -584,35 +593,134 @@ let sortMode = { history:"default", ranking:"default", pending:"default" };
 
 const footnote = document.getElementById("footnote");
 
-const LS_KEY = "cinepremiadas:v1";
-function persist(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify({ watched, wishlist:[...wishlist] })); setFootnote(true); }
-  catch(e){ setFootnote(false); }
+const SB_URL = "https://ghjsbcbeyjbldzjdnakt.supabase.co";
+const SB_KEY = "sb_publishable_B-vc2pxVT-PO0rWyhwYynw_Yg4684Mm";
+const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY, { auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true } }) : null;
+let user = null, localOnly = false, syncStatus = "", pushTimer = null;
+
+const esc = t=>String(t).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lsKey = ()=> "cinepremiadas:v2:" + (user ? user.id : "local");
+
+function cleanWatched(o){
+  const out = {};
+  if(!o || typeof o !== "object") return out;
+  Object.keys(o).forEach(id=>{
+    const m = MOVIES_BY_ID[id], w = o[id];
+    if(!m || !w) return;
+    const r = Math.round(Number(w.rating));
+    if(!(r>=1 && r<=10)) return;
+    out[id] = { rating:r, comment:String(w.comment||"").slice(0,500), watchedAt:Number(w.watchedAt)||Date.now(), title:m.title, award:m.award, year:m.year };
+  });
+  return out;
 }
-function setFootnote(ok){
-  footnote.innerHTML = (ok ? '<span class="status-ok">●</span> Guardado en este navegador' : '<span class="status-bad">●</span> No se puede guardar en este navegador (modo privado o almacenamiento bloqueado)')
-    + '<br><a href="#" id="expBtn">Exportar copia</a> · <a href="#" id="impBtn">Importar copia</a><input type="file" id="impFile" accept="application/json" style="display:none">';
+const cleanWish = a=> new Set((Array.isArray(a)?a:[]).filter(id=>MOVIES_BY_ID[id]));
+
+function readLocal(){
+  try{
+    let d = JSON.parse(localStorage.getItem(lsKey()) || "null");
+    if(!d && !user){ d = JSON.parse(localStorage.getItem("cinepremiadas:v1") || "null"); }
+    return d;
+  }catch(e){ return null; }
+}
+function writeLocal(dirty){
+  try{ localStorage.setItem(lsKey(), JSON.stringify({ watched, wishlist:[...wishlist], dirty:!!dirty })); }catch(e){}
+}
+function loadLocalIntoState(){
+  const d = readLocal();
+  watched = d ? cleanWatched(d.watched) : {};
+  wishlist = d ? cleanWish(d.wishlist) : new Set();
+}
+
+function persist(){
+  writeLocal(!!user);
+  if(user){ syncStatus = "Pendiente de sincronizar…"; clearTimeout(pushTimer); pushTimer = setTimeout(push, 800); }
+  renderFootnote();
+}
+async function push(){
+  if(!user || !sb) return;
+  syncStatus = "Sincronizando…"; renderFootnote();
+  const { error } = await sb.from("user_data").upsert({ user_id:user.id, watched, wishlist:[...wishlist], updated_at:new Date().toISOString() });
+  if(error){ syncStatus = "Sin conexión: se reintentará"; clearTimeout(pushTimer); pushTimer = setTimeout(push, 15000); }
+  else { syncStatus = "Sincronizado"; writeLocal(false); }
+  renderFootnote();
+}
+async function pull(){
+  if(!user || !sb) return;
+  const { data, error } = await sb.from("user_data").select("watched,wishlist").eq("user_id", user.id).maybeSingle();
+  if(error){ syncStatus = "Sin conexión: usando copia local"; renderFootnote(); return; }
+  const local = readLocal();
+  if(!data){
+    const legacy = (()=>{ try{ return JSON.parse(localStorage.getItem("cinepremiadas:v1")||"null"); }catch(e){ return null; } })();
+    if(legacy && !Object.keys(watched).length){ watched = cleanWatched(legacy.watched); wishlist = cleanWish(legacy.wishlist); }
+    if(Object.keys(watched).length || wishlist.size){ try{ localStorage.removeItem("cinepremiadas:v1"); }catch(e){} await push(); } else { syncStatus = "Sincronizado"; }
+  }else if(local && local.dirty){
+    watched = { ...cleanWatched(data.watched), ...watched };
+    wishlist = new Set([...cleanWish(data.wishlist), ...wishlist]);
+    await push();
+  }else{
+    watched = cleanWatched(data.watched);
+    wishlist = cleanWish(data.wishlist);
+    writeLocal(false); syncStatus = "Sincronizado";
+  }
+  renderAll(); renderFootnote();
+}
+
+function renderFootnote(){
+  const who = user ? `Sesión: ${esc(user.email||"")} · ${esc(syncStatus)}` : "Modo sin cuenta: datos solo en este navegador";
+  footnote.innerHTML = `<span class="${user && /Sin conexión/.test(syncStatus) ? "status-bad" : "status-ok"}">●</span> ${who}<br><a href="#" id="expBtn">Exportar copia</a> · <a href="#" id="impBtn">Importar copia</a>${user || localOnly ? ' · <a href="#" id="outBtn">'+(user?"Cerrar sesión":"Iniciar sesión")+'</a>' : ""}<input type="file" id="impFile" accept="application/json" style="display:none">`;
   document.getElementById("expBtn").onclick = (e)=>{ e.preventDefault();
     const blob = new Blob([JSON.stringify({ watched, wishlist:[...wishlist] }, null, 2)], {type:"application/json"});
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "cinepremiadas-copia.json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000); };
   document.getElementById("impBtn").onclick = (e)=>{ e.preventDefault(); document.getElementById("impFile").click(); };
   document.getElementById("impFile").onchange = (e)=>{
-    const f = e.target.files[0]; if(!f) return;
+    const f = e.target.files[0]; if(!f || f.size > 2000000) return;
     const r = new FileReader();
-    r.onload = ()=>{ try{ const d = JSON.parse(r.result); watched = d.watched || {}; wishlist = new Set(d.wishlist || []); persist(); renderAll(); showToast("Copia importada"); }catch(err){ showToast("Archivo no válido"); } };
+    r.onload = ()=>{ try{ const d = JSON.parse(r.result); watched = cleanWatched(d.watched); wishlist = cleanWish(d.wishlist); persist(); renderAll(); showToast("Copia importada"); }catch(err){ showToast("Archivo no válido"); } };
     r.readAsText(f);
   };
+  const out = document.getElementById("outBtn");
+  if(out) out.onclick = async (e)=>{ e.preventDefault();
+    if(user && sb){ await sb.auth.signOut(); } else { localOnly = false; showLogin(); } };
+}
+
+function showLogin(){
+  if(document.getElementById("authModal")) return;
+  const m = document.createElement("div"); m.className = "modal"; m.id = "authModal";
+  m.innerHTML = `<div class="modal-box auth-box"><h2>CinePremiadas</h2>
+    <p>Entra con tu correo para guardar tu historial y verlo en todos tus dispositivos. Recibirás un enlace de acceso, sin contraseña.</p>
+    <input id="authEmail" type="email" autocomplete="email" placeholder="tu@correo.com">
+    <button class="btn primary" id="authSend">Enviarme el enlace</button>
+    <div class="auth-msg" id="authMsg"></div>
+    <button class="btn" id="authLocal">Continuar sin cuenta (solo en este navegador)</button></div>`;
+  document.body.appendChild(m);
+  const msg = m.querySelector("#authMsg");
+  m.querySelector("#authSend").onclick = async ()=>{
+    const email = m.querySelector("#authEmail").value.trim();
+    if(!/^\S+@\S+\.\S+$/.test(email)){ msg.textContent = "Escribe un correo válido."; return; }
+    if(!sb){ msg.textContent = "No se pudo cargar el servicio de acceso."; return; }
+    msg.textContent = "Enviando…";
+    const { error } = await sb.auth.signInWithOtp({ email, options:{ shouldCreateUser:false, emailRedirectTo: location.href.split("#")[0].split("?")[0] } });
+    msg.textContent = (error && error.status === 429) ? "Demasiados intentos. Espera unos minutos." : "Si tu correo está invitado, recibirás un enlace en unos instantes.";
+  };
+  m.querySelector("#authLocal").onclick = ()=>{ localOnly = true; m.remove(); loadLocalIntoState(); renderAll(); renderFootnote(); };
+}
+
+async function handleSession(session){
+  if(session && session.user){
+    user = session.user; localOnly = false;
+    const m = document.getElementById("authModal"); if(m) m.remove();
+    loadLocalIntoState(); renderAll(); syncStatus = "Sincronizando…"; renderFootnote();
+    await pull();
+  }else{
+    user = null; watched = {}; wishlist = new Set(); renderAll();
+    if(!localOnly) showLogin(); else { loadLocalIntoState(); renderAll(); }
+    renderFootnote();
+  }
 }
 function initStorage(){
-  try{
-    const d = JSON.parse(localStorage.getItem(LS_KEY) || "null");
-    if(d){
-      watched = d.watched || {};
-      wishlist = new Set(d.wishlist || []);
-    }
-    setFootnote(true);
-  }catch(e){ setFootnote(false); }
-  renderAll();
+  renderFootnote();
+  if(!sb){ localOnly = true; loadLocalIntoState(); renderAll(); renderFootnote(); return; }
+  sb.auth.onAuthStateChange((ev, session)=>{ setTimeout(()=>handleSession(session), 0); });
 }
 
 async function saveWatched(movie, rating, comment="", dateStr=""){
@@ -794,7 +902,7 @@ function renderCard(){
         <div class="rate-row" id="ratePips"></div>
         <div class="rate-extra">
           <div><label>Fecha de visionado</label><input type="date" id="rateDate"></div>
-          <div><label>Comentario (opcional)</label><textarea id="rateComment" placeholder="¿Qué te ha parecido?"></textarea></div>
+          <div><label>Comentario (opcional)</label><textarea id="rateComment" maxlength="500" placeholder="¿Qué te ha parecido?"></textarea></div>
         </div>
         <div class="rate-confirm">
           <button class="btn primary" id="confirmRate">Guardar valoración</button>
@@ -1049,12 +1157,12 @@ function rowHtml(x, dateStr, pos){
     <div class="row" data-q="${(x.title+' '+(x.director||'')).toLowerCase()}">
       ${pos ? `<div class="pos">${pos}</div>` : ""}
       <div class="info">
-        <h4>${x.title}</h4>
+        <h4>${esc(x.title)}</h4>
         <div class="sub">
           <span style="color:${meta.color}">${meta.label}</span> · ${x.year}
           ${dateStr ? "· visto " + dateStr : ""}
         </div>
-        ${x.comment ? `<div class="cmt">“${x.comment.replace(/</g,"&lt;")}”</div>` : ""}
+        ${x.comment ? `<div class="cmt">“${esc(x.comment)}”</div>` : ""}
       </div>
       <div class="score">${x.rating}</div>
       <button class="edit" data-edit="${x.id}">editar</button>
