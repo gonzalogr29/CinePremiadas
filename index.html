@@ -268,6 +268,72 @@
     header.top{ padding-top: 22px; }
     .mode-row{ flex-wrap: wrap; }
   }
+
+  /* ===== Estilo tipo Letterboxd ===== */
+  html:root:not(#x){
+    --bg:#14181c; --bg-soft:#1b2228; --panel:#1f2630; --panel-line:#2c3440;
+    --ink:#ffffff; --ink-dim:#9ab; --ink-faint:#678;
+    --gold:#00e054; --gold-soft:#40bcf4; --teal:#00ac1c; --crimson:#ff8000;
+    --lb-green:#00e054; --lb-orange:#ff8000; --lb-blue:#40bcf4;
+    color-scheme: dark;
+  }
+  body{ background-image:none; background:var(--bg); }
+  h1,h2,h3,.display{ font-family:'Fraunces', Georgia, serif; }
+  header.top{ align-items:center; padding-top:26px; }
+  .brand{ flex-direction:row; align-items:center; gap:14px; flex-wrap:wrap; }
+  .brand .mark{ font-family:'Inter',sans-serif; font-weight:800; font-size:22px; letter-spacing:-0.01em; display:flex; align-items:center; }
+  .brand .mark::before{ content:""; width:14px; height:14px; border-radius:50%; background:var(--lb-orange);
+    margin-right:30px; box-shadow:11px 0 0 var(--lb-green), 22px 0 0 var(--lb-blue); flex:none; }
+  .brand .mark em{ font-style:normal; color:var(--lb-green); }
+  .brand .sub{ font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-faint); }
+
+  nav.tabs{ background:transparent; border:none; border-bottom:1px solid var(--panel-line); border-radius:0; padding:0; gap:22px;
+    max-width:none; justify-content:center; margin:0 0 24px; }
+  nav.tabs button{ border-radius:0; padding:12px 2px; font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-faint); border-bottom:3px solid transparent; }
+  nav.tabs button.active{ background:transparent; color:var(--ink); border-bottom-color:var(--lb-green); }
+
+  .progress-card,.card,.row,.stat,.empty,.modal-box{ border-radius:4px; background:var(--panel); }
+  .progress-card .pbar,.bar-row .bt{ border-radius:2px; border:none; background:var(--panel-line); }
+  .progress-card .pbar > div,.bar-row .bt div{ border-radius:2px; background:var(--lb-green); }
+  .progress-card .pnum{ font-family:'Inter'; color:var(--lb-green); }
+
+  .chip{ position:relative; flex-direction:column; justify-content:center; gap:6px; min-width:74px; padding:12px 10px 9px;
+    border-radius:4px; background:var(--bg-soft); border:1px solid var(--panel-line); font-size:11px; text-transform:uppercase; letter-spacing:.08em; opacity:.55; text-align:center; }
+  .chip:hover{ opacity:.85; }
+  .chip.on{ opacity:1; background:var(--panel); border-color:var(--dot-color); box-shadow:inset 0 -3px 0 var(--dot-color); }
+  .chip input,.chip .dot{ display:none; }
+  .chip small{ display:block; margin-top:-3px; font-size:10px; letter-spacing:0; }
+  .aw-ico{ width:30px; height:30px; color:var(--dot-color); display:block; }
+  .filters{ gap:8px; }
+
+  .mode-btn,.sort-btn,.subtabs button,.btn,.sort-select,.filter-sel,.search-input,.rate-extra textarea,.rate-extra input{ border-radius:3px; }
+  .mode-btn,.subtabs button,.sort-btn{ text-transform:uppercase; letter-spacing:.07em; font-size:11px; }
+  .mode-btn.active,.sort-btn.active{ background:var(--ink-dim); border-color:var(--ink-dim); color:#14181c; }
+  .subtabs button.active{ background:var(--panel-line); color:#fff; border-color:var(--panel-line); }
+
+  .roll-btn{ background:var(--lb-green); color:#14181c; border-radius:3px; box-shadow:none; text-transform:uppercase; letter-spacing:.1em; font-size:13px; }
+  .roll-btn:hover{ background:#2bf073; box-shadow:none; transform:none; }
+  .btn.primary,.row .mark-btn{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .btn{ background:var(--panel-line); border-color:var(--panel-line); }
+
+  .card{ padding:0 0 24px; }
+  .card > *:not(.poster){ margin-left:26px; margin-right:26px; }
+  .card::before{ display:none; }
+  .poster{ margin:0 0 18px !important; border-radius:4px 4px 0 0; min-height:120px; }
+  .poster span{ font-family:'Inter'; font-weight:800; letter-spacing:-.02em; }
+  .card h2{ font-size:28px; }
+  .badge{ border-radius:3px; text-transform:uppercase; font-size:10.5px; }
+  .links a{ border-radius:3px; text-transform:uppercase; letter-spacing:.06em; font-size:10.5px; }
+
+  .list{ gap:0; }
+  .row{ border-radius:0; border:none; border-bottom:1px solid var(--panel-line); background:transparent; padding:12px 4px; }
+  .row .info h4{ font-family:'Fraunces',serif; font-weight:500; font-size:16px; }
+  .row .score{ background:transparent; border:none; color:var(--lb-green); width:auto; font-family:'Inter'; font-size:15px; }
+  .row .score::after{ content:" ★"; font-size:12px; }
+  .rate-pip{ border-radius:3px; }
+  .rate-pip:hover{ background:var(--lb-orange); border-color:var(--lb-orange); color:#14181c; }
+  .rate-pip.sel{ background:var(--lb-green); border-color:var(--lb-green); }
+  .toast{ background:var(--lb-green); border-radius:3px; }
 </style>
 </head>
 <body>
@@ -559,6 +625,16 @@ const AWARD_META = {
   berlin: { label:"Berlín", color:"#4d7ea8", full:"Oso de Oro (Festival de Berlín)" },
 };
 
+
+const AWARD_ICON = {
+  oscar:  '<circle cx="12" cy="4.2" r="2.3"/><path d="M9.6 7.6h4.8l-.5 6.600 1.700 2.400H8.400l1.700-2.400z"/><rect x="6.500" y="18.800" width="11" height="2.600" rx=".7"/>',
+  cannes: '<path d="M11.200 21.500v-9.800h1.600v9.800z"/><path d="M12 11.800C8.800 11.600 5.800 9.800 4.400 6.600c3.200-.3 5.600.8 7.600 3.200z"/><path d="M12 11.800c3.200-.2 6.200-2 7.600-5.200-3.200-.3-5.600.8-7.600 3.200z"/><path d="M12 10.800C10.300 8.600 10.300 5.600 12 2.500c1.700 3.100 1.700 6.100 0 8.300z"/>',
+  goya:   '<circle cx="12" cy="7.600" r="3.700"/><path d="M4.500 21.500c0-4.600 3.300-7.200 7.500-7.200s7.500 2.600 7.500 7.200z"/>',
+  venice: '<path d="M3.500 19c-.2-6.500 4.200-12.200 11.800-13.500-1.600 1.500-2.200 3-2.200 4.300 2.100-.8 4.400-.5 6.400.6-2.100.4-3.700 1.500-4.700 3.200 1.900-.3 3.500.1 4.700 1.100-3.100.2-5.300 1.200-7.200 3.700.6-1.300.5-2.500-.1-3.400-1 2.100-3.600 3.900-6.700 4.200z"/>',
+  berlin: '<circle cx="6.600" cy="6.200" r="2.900"/><circle cx="17.400" cy="6.200" r="2.900"/><ellipse cx="12" cy="13.200" rx="7.400" ry="7"/><ellipse cx="12" cy="15.600" rx="3" ry="2.200" fill="var(--panel)"/>'
+};
+function awardIcon(key){ return '<svg class="aw-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'+(AWARD_ICON[key]||'')+'</svg>'; }
+
 function slugify(s){
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
@@ -778,7 +854,7 @@ function renderFilters(){
     label.className = "chip" + (activeFilters.has(key) ? " on" : "");
     label.style.setProperty("--dot-color", meta.color);
     label.innerHTML = `<input type="checkbox" ${activeFilters.has(key)?"checked":""}>
-      <span class="dot"></span>${meta.label} <small>(${count})</small>`;
+      ${awardIcon(key)}<span>${meta.label}</span> <small>(${count})</small>`;
     label.querySelector("input").addEventListener("change", (e)=>{
       if(e.target.checked) activeFilters.add(key); else activeFilters.delete(key);
       if(activeFilters.size===0){ activeFilters.add(key); e.target.checked = true; }
@@ -1012,7 +1088,7 @@ function buildAwardChipsHtml(filterSet, counts){
     const on = filterSet.has(key);
     return `<label class="chip${on?' on':''}" data-key="${key}" style="--dot-color:${meta.color}">
       <input type="checkbox" ${on?"checked":""}>
-      <span class="dot"></span>${meta.label} <small>(${count})</small>
+      ${awardIcon(key)}<span>${meta.label}</span> <small>(${count})</small>
     </label>`;
   }).join("");
 }
