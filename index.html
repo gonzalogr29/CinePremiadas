@@ -373,6 +373,7 @@
     <div class="subtabs">
       <button class="sub-btn active" data-sub="history">Historial</button>
       <button class="sub-btn" data-sub="ranking">Ranking</button>
+      <button class="sub-btn" data-sub="wish">★ Quiero verlas <span id="wishCount"></span></button>
       <button class="sub-btn" data-sub="pending">Por ver</button>
       <button class="sub-btn" data-sub="stats">Estadísticas</button>
     </div>
@@ -1150,6 +1151,36 @@ function renderCollectionInner(){
   document.getElementById("shareBtn").style.display = subTab==="ranking" ? "" : "none";
   document.getElementById("searchInput").style.display = subTab==="stats" ? "none" : "";
   if(subTab === "stats"){ renderStatsTab(body); return; }
+
+  const wc = document.getElementById("wishCount");
+  const wishMovies = [...wishlist].map(id=>MOVIES_BY_ID[id]).filter(m=>m && !watched[m.id] && isPrimary(m));
+  if(wc) wc.textContent = wishMovies.length ? "("+wishMovies.length+")" : "";
+  if(subTab === "wish"){
+    document.getElementById("shareBtn").style.display = "none";
+    if(!wishMovies.length){
+      body.innerHTML = `<div class="empty"><div class="display">Tu lista está vacía</div>Pulsa “☆ Quiero verla pronto” en la ficha de una película para guardarla aquí.</div>`;
+      return;
+    }
+    body.innerHTML = `<div class="list">` + wishMovies.map(m=>{
+      const meta = AWARD_META[m.award];
+      return `<div class="row pending" data-q="${(m.title+' '+m.director).toLowerCase()}">
+        <div class="info">
+          <h4><span class="wish-star">★</span> ${m.title}</h4>
+          <div class="sub"><span style="color:${meta.color}">${meta.label}</span> · ${m.year} · ${m.country}</div>
+        </div>
+        <button class="edit" data-unwish="${m.id}">quitar</button>
+        <button class="mark-btn" data-pick="${m.id}">Ver ficha</button>
+      </div>`;
+    }).join("") + `</div>`;
+    body.querySelectorAll("[data-unwish]").forEach(el=>el.addEventListener("click", ()=>toggleWish(MOVIES_BY_ID[el.getAttribute("data-unwish")])));
+    body.querySelectorAll("[data-pick]").forEach(el=>el.addEventListener("click", ()=>{
+      document.querySelector('.tab-btn[data-view="discover"]').click();
+      currentMovie = MOVIES_BY_ID[el.getAttribute("data-pick")];
+      selectedRating = null;
+      renderCard();
+    }));
+    return;
+  }
 
   if(subTab === "pending"){
     const allPending = MOVIES.filter(m=>!watched[m.id] && isPrimary(m));
